@@ -20,7 +20,7 @@ TODO:
 * More interesting landscape
 * More unique skybox
 * Optimization
-  * Mesh instancing of nodes?
+  * Mesh instancing of nodes? ✔️
 */
 
 const maxTrees = 20;
@@ -113,6 +113,7 @@ function init() {
   modelLoader = new GLTFLoader();
   modelLoader.load("./terrain.glb", (model) => {
     ground = model.scene;
+    ground.scale.setScalar(2);
     scene.add(ground);
   });
 

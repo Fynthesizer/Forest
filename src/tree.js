@@ -19,21 +19,21 @@ const twistVariation = Math.PI / 4;
 const windSpeed = 0.0005;
 const windAmount = 0.01;
 
+const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
+
 export class Tree extends THREE.Object3D {
   constructor(position) {
     super();
     this.position.copy(position);
     this.nodes = [];
+    this.tips = []; //Currently growing nodes
     this.name = "Tree";
 
     this.growing = true;
 
     this.colours = generateColours();
 
-    this.nodeMat = new THREE.MeshBasicMaterial({
-      color: this.colours.nodeColour,
-    });
-
+    //Lines
     this.lineGeo = new THREE.BufferGeometry();
     this.lineMat = new THREE.LineBasicMaterial({
       color: this.colours.lineColour,
@@ -51,6 +51,16 @@ export class Tree extends THREE.Object3D {
       0
     );
     this.add(this.root);
+    console.log(this.tips.push(this.root));
+
+    //Node Meshes
+    this.nodeDummy = new THREE.Object3D();
+    this.nodeMat = new THREE.MeshBasicMaterial({
+      color: this.colours.nodeColour,
+    });
+    this.nodesMesh = new THREE.InstancedMesh(nodeGeo, this.nodeMat, 300);
+    this.nodesMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.add(this.nodesMesh);
 
     //Light
     this.light = new THREE.PointLight(this.colours.lightColour, 1, 10);
@@ -59,11 +69,9 @@ export class Tree extends THREE.Object3D {
   }
 
   update() {
-    if (this.growing) {
-      this.root.grow();
-      if (this.nodes.length > 1) this.updateLines();
-    }
-    this.root.wind();
+    this.updateLines();
+    this.updateNodes();
+    this.tips.forEach((tip) => tip.grow());
   }
 
   stopGrowth() {
@@ -77,6 +85,7 @@ export class Tree extends THREE.Object3D {
   }
 
   updateLines() {
+    console.time();
     let vertices = new Float32Array(this.nodes.length * 6);
     let index = 0;
     this.nodes.forEach((node) =>
@@ -90,6 +99,29 @@ export class Tree extends THREE.Object3D {
       new THREE.BufferAttribute(vertices, 3)
     );
     this.lines.geometry.computeBoundingSphere();
+    console.timeEnd();
+  }
+
+  updateNodes() {
+    this.nodes.forEach((node, index) => {
+      //Apply wind to trunk
+      if (node.type == NodeType.Trunk || node.type == NodeType.Root)
+        node.wind();
+      //Find position of node relative to tree
+      let position = new THREE.Vector3(0, 0, 0);
+      node.localToWorld(position);
+      this.worldToLocal(position);
+      this.nodeDummy.position.copy(position);
+      //Set scale
+      this.nodeDummy.scale.setScalar(node.nodeSize);
+      this.nodeDummy.updateMatrix();
+      this.nodesMesh.setMatrixAt(index, this.nodeDummy.matrix);
+    });
+    this.nodesMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  logNodeData() {
+    console.log("Tips: " + this.tips.length + " Nodes: " + this.nodes.length);
   }
 }
 
@@ -118,10 +150,11 @@ export class TreeNode extends THREE.Object3D {
       this.type == NodeType.Trunk ? trunkGrowthRate : branchGrowthRate;
 
     //Node Mesh
-    let nodeSize = 0.2 / (1 + heightIndex + branchIndex);
-    let nodeGeo = new THREE.SphereGeometry(nodeSize, 4, 2);
-    this.mesh = new THREE.Mesh(nodeGeo, this.tree.nodeMat);
-    this.add(this.mesh);
+    this.nodeSize = 0.2 / (1 + heightIndex + branchIndex);
+    //this.scale.setScalar(nodeSize);
+    //this.mesh = new THREE.Mesh(nodeGeo, this.tree.nodeMat);
+    //this.mesh.scale.setScalar(nodeSize);
+    //this.add(this.mesh);
 
     this.childNodes = [];
 
@@ -151,13 +184,12 @@ export class TreeNode extends THREE.Object3D {
         this.createBranches(1); //Only create one branch for the trunk
       else this.createBranches(2);
     }
-    //Grow children
-    else if (this.childNodes.length > 0) {
-      //this.growing = false;
-      this.childNodes.forEach(function (child) {
-        child.grow(0.02);
-      });
-    } //else this.tree.stopGrowth();
+    //End of branch
+    else {
+      this.tree.tips.splice(this.tree.tips.indexOf(this), 1);
+      //this.tree.logNodeData();
+      //this.tree.stopGrowth();
+    }
   }
 
   updatePosition() {
@@ -166,27 +198,6 @@ export class TreeNode extends THREE.Object3D {
       this.direction.y * this.currentLength,
       this.direction.z * this.currentLength
     );
-
-    /*
-    if (this.currentLength < this.maxLength) {
-      //let parentPoint = (-this.position.x, -this.position.y, -this.position.z);
-      let parentPoint = new THREE.Vector3(0, 5, 0);
-      //linePoints.push(-this.position.x, -this.position.y, -this.position.z);
-      //const lineGeo = new MeshLine();
-      //lineGeo.setPoints(linePoints);
-      //lineGeo.computeBoundingSphere();
-      let points = [2];
-      points[0] = new THREE.Vector3(0, 0, 0);
-      points[1] = new THREE.Vector3(
-        -this.position.x,
-        -this.position.y,
-        -this.position.z
-      );
-      this.line.geometry.setPoints(points);
-      //this.line.geometry.attributes.position.array[1] = parentPoint;
-      this.line.geometry.attributes.position.needsUpdate = true;
-    }
-    */
   }
 
   wind() {
@@ -197,10 +208,12 @@ export class TreeNode extends THREE.Object3D {
         windAmount
     );
 
+    /*
     if (this.childNodes.length > 0)
       this.childNodes.forEach(function (child) {
         child.wind();
       });
+      */
   }
 
   getBranchVertices() {
@@ -273,7 +286,7 @@ export class TreeNode extends THREE.Object3D {
             direction = rotateDirection(
               this.direction,
               this.branchingAngle,
-              Math.PI / 3,
+              Math.PI / 4,
               Math.PI / 10
             );
             type = NodeType.Branch;
@@ -329,7 +342,9 @@ export class TreeNode extends THREE.Object3D {
       );
       this.add(newNode);
       this.childNodes.push(newNode);
+      this.tree.tips.push(newNode);
     }
+    this.tree.tips.splice(this.tree.tips.indexOf(this), 1);
   }
 
   message(message) {
