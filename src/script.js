@@ -102,13 +102,6 @@ function init() {
   controls = new PointerLockControls(camera, renderer.domElement);
 
   //Ground
-  //const groundGeo = new THREE.PlaneGeometry(1, 1, 1);
-  //const groundMat = new THREE.MeshLambertMaterial({ color: "#398549" });
-  //ground = new THREE.Mesh(groundGeo, groundMat);
-  //ground.rotateX(-Math.PI / 2);
-  //ground.scale.set(1000, 1000, 1);
-  //scene.add(ground);
-
   modelLoader = new GLTFLoader();
   modelLoader.load("./terrain.glb", (model) => {
     ground = model.scene;
@@ -153,12 +146,14 @@ function onPointerMove(event) {
 
 function onClick() {
   controls.lock();
-  //raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  //const intersections = raycaster.intersectObjects(scene.children);
-  //intersection = intersections.length > 0 ? intersections[0] : null;
-  if (canPlantTree()) {
-    const tree = new Tree(intersection.point);
-    trees.add(tree);
+  if (controls.isLocked) {
+    //raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    //const intersections = raycaster.intersectObjects(scene.children);
+    //intersection = intersections.length > 0 ? intersections[0] : null;
+    if (canPlantTree()) {
+      const tree = new Tree(intersection.point);
+      trees.add(tree);
+    }
   }
 }
 var animate = function () {

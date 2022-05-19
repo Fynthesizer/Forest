@@ -133,7 +133,7 @@ export class Tree extends THREE.Object3D {
       let matrix = new THREE.Matrix4();
       //Find position of node relative to tree
       let position = new THREE.Vector3(0, 0, 0);
-      let size = node.nodeSize * (node.resonance + 1);
+      let size = node.nodeSize * (node.resonance * 2 + 1);
       node.localToWorld(position);
       this.worldToLocal(position);
       //Set matrix
@@ -391,20 +391,29 @@ function generateColours(length) {
   return colours;
 }
 
-const baseFreq = 440;
+const baseFreq = 400;
 
 function lengthToPitch(length) {
   let freq = baseFreq / length;
   let note = Tone.Frequency(freq).toMidi();
   //let note = Tone.Frequency(pitch, "midi").toNote();
-  note = quantizeNote(note, scale);
+  note = quantizeNote(note, scales.minor);
 
   note = Tone.Frequency(note, "midi").toNote();
 
   return note;
 }
 
-const scale = [0, 2, 4, 5, 7, 9, 11];
+const scales = {
+  major: [0, 2, 4, 5, 7, 9, 11],
+  minor: [0, 2, 3, 5, 7, 8, 10],
+  harmMinor: [0, 2, 3, 5, 7, 8, 11],
+  majorPent: [0, 2, 4, 7, 9],
+  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  wholeTone: [0, 2, 4, 6, 8, 10],
+  persian: [0, 1, 4, 5, 6, 8, 11],
+  lydian: [0, 2, 4, 6, 7, 9, 11],
+};
 
 function quantizeNote(note, scale) {
   let degree = note % 12;
