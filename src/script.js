@@ -7,24 +7,23 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { Loader } from "three";
-//import { TerrainModel } from "./assets/terrain.glb";
 
 /*
 TODO:
-* Make trees more tree-like
+* Make trees more tree-like ✔️
 * Figure out the musical aspect
 * Figure out the visual aspect
-* More interesting landscape
+* More interesting landscape ✔️
 * More unique skybox
-* Optimization
+* Optimization ✔️
   * Mesh instancing of nodes? ✔️
 */
 
 const maxTrees = 20;
-const directionalColour = new THREE.Color("#badefc");
+const lightColour = new THREE.Color("#badefc");
+const lightIntensity = 0.25;
+const reverbDecay = 10;
 //const terrainModel = require("./assets/terrain.glb");
 
 function importAll(r) {
@@ -96,7 +95,7 @@ function init() {
   listener = new THREE.AudioListener();
   camera.add(listener);
   Tone.setContext(listener.context);
-  reverb = new Tone.Reverb(5);
+  reverb = new Tone.Reverb(reverbDecay);
   Tone.connect(listener.gain, reverb);
   reverb.connect(Tone.getDestination());
 
@@ -136,8 +135,8 @@ function init() {
   scene.background = skyboxTexture;
 
   //Lights
-  ambientLight = new THREE.AmbientLight(directionalColour, 0.25);
-  directionalLight = new THREE.DirectionalLight(directionalColour, 0.25);
+  ambientLight = new THREE.AmbientLight(lightColour, lightIntensity);
+  directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
   scene.add(ambientLight);
   scene.add(directionalLight);
 

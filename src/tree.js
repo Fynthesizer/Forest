@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { TOUCH } from "three";
 import * as Tone from "tone";
 import { listener } from "./script.js";
 
@@ -19,6 +20,8 @@ const twistVariation = Math.PI / 4;
 const windSpeed = 0.0005;
 const windAmount = 0.01;
 
+const oscType = "pulse";
+
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
 
 export class Tree extends THREE.Object3D {
@@ -31,7 +34,8 @@ export class Tree extends THREE.Object3D {
 
     this.growing = true;
 
-    this.colours = generateColours();
+    this.baseHeight = THREE.MathUtils.randFloat(2, 4);
+    this.colours = generateColours(this.baseHeight);
 
     //Lines
     this.lineGeo = new THREE.BufferGeometry();
@@ -51,27 +55,45 @@ export class Tree extends THREE.Object3D {
       0
     );
     this.add(this.root);
-    console.log(this.tips.push(this.root));
+    this.tips.push(this.root);
 
     //Node Meshes
     this.nodeDummy = new THREE.Object3D();
-    this.nodeMat = new THREE.MeshBasicMaterial({
-      color: this.colours.nodeColour,
-    });
+    this.nodeMat = new THREE.MeshBasicMaterial();
     this.nodesMesh = new THREE.InstancedMesh(nodeGeo, this.nodeMat, 300);
     this.nodesMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.nodesMesh.setColorAt(0, new THREE.Color());
     this.add(this.nodesMesh);
 
     //Light
     this.light = new THREE.PointLight(this.colours.lightColour, 1, 10);
     this.light.position.set(0, 1, 0);
-    this.root.add(this.light);
+    this.add(this.light);
+
+    //Music
+    this.voice = new THREE.PositionalAudio(listener);
+    this.synth = new Tone.Synth();
+    this.synth.envelope.attack = 0.5;
+    this.synth.oscillator.type = oscType;
+    this.voice.setNodeSource(this.synth.output);
+    this.add(this.voice);
+    this.timer = setInterval(this.startArpeggio.bind(this), 5000);
   }
 
   update() {
     this.updateLines();
     this.updateNodes();
     this.tips.forEach((tip) => tip.grow());
+    this.light.intensity = 1 + this.root.resonance * 2;
+    //if (this.light.intensity > 1) this.light.intensity -= 0.02;
+  }
+
+  startArpeggio() {
+    this.root.sing();
+  }
+
+  playNote(note) {
+    this.synth.triggerAttackRelease(note, "16n");
   }
 
   stopGrowth() {
@@ -85,7 +107,6 @@ export class Tree extends THREE.Object3D {
   }
 
   updateLines() {
-    console.time();
     let vertices = new Float32Array(this.nodes.length * 6);
     let index = 0;
     this.nodes.forEach((node) =>
@@ -99,25 +120,30 @@ export class Tree extends THREE.Object3D {
       new THREE.BufferAttribute(vertices, 3)
     );
     this.lines.geometry.computeBoundingSphere();
-    console.timeEnd();
   }
 
   updateNodes() {
     this.nodes.forEach((node, index) => {
       //Apply wind to trunk
       if (node.type == NodeType.Trunk || node.type == NodeType.Root)
-        node.wind();
+        node.sway();
+      //Decay node resonance
+      if (node.resonance > 0) node.resonance -= 0.02;
+
+      let matrix = new THREE.Matrix4();
       //Find position of node relative to tree
       let position = new THREE.Vector3(0, 0, 0);
+      let size = node.nodeSize * (node.resonance + 1);
       node.localToWorld(position);
       this.worldToLocal(position);
-      this.nodeDummy.position.copy(position);
-      //Set scale
-      this.nodeDummy.scale.setScalar(node.nodeSize);
-      this.nodeDummy.updateMatrix();
-      this.nodesMesh.setMatrixAt(index, this.nodeDummy.matrix);
+      //Set matrix
+      matrix.makeScale(size, size, size);
+      matrix.setPosition(position.x, position.y, position.z);
+      this.nodesMesh.setMatrixAt(index, matrix);
+      this.nodesMesh.setColorAt(index, this.colours.nodeColour);
     });
     this.nodesMesh.instanceMatrix.needsUpdate = true;
+    this.nodesMesh.instanceColor.needsUpdate = true;
   }
 
   logNodeData() {
@@ -149,12 +175,8 @@ export class TreeNode extends THREE.Object3D {
     this.growthRate =
       this.type == NodeType.Trunk ? trunkGrowthRate : branchGrowthRate;
 
-    //Node Mesh
     this.nodeSize = 0.2 / (1 + heightIndex + branchIndex);
-    //this.scale.setScalar(nodeSize);
-    //this.mesh = new THREE.Mesh(nodeGeo, this.tree.nodeMat);
-    //this.mesh.scale.setScalar(nodeSize);
-    //this.add(this.mesh);
+    this.resonance = 0;
 
     this.childNodes = [];
 
@@ -162,13 +184,6 @@ export class TreeNode extends THREE.Object3D {
     this.maxLength = length;
     this.windOffset =
       (this.position.x + this.position.y + this.position.z) * 10;
-
-    //Synth
-    this.sound = new THREE.PositionalAudio(listener);
-    this.synth = new Tone.Synth();
-    this.synth.envelope.attack = 0.5;
-    this.sound.setNodeSource(this.synth.output);
-    this.add(this.sound);
   }
 
   grow() {
@@ -200,20 +215,28 @@ export class TreeNode extends THREE.Object3D {
     );
   }
 
-  wind() {
+  sway() {
     this.rotation.set(
       Math.sin((performance.now() + this.windOffset) * windSpeed) * windAmount,
       0,
       Math.sin((performance.now() + this.windOffset + 100) * windSpeed * 1.2) *
         windAmount
     );
+  }
 
-    /*
-    if (this.childNodes.length > 0)
-      this.childNodes.forEach(function (child) {
-        child.wind();
-      });
-      */
+  sing() {
+    this.resonance = 1;
+    if (this.type != NodeType.Root) {
+      let pitch = lengthToPitch(this.maxLength);
+      this.tree.playNote(pitch);
+    }
+    if (this.childNodes.length > 0) setTimeout(this.sendSignal.bind(this), 200);
+  }
+
+  sendSignal() {
+    let target =
+      this.childNodes[Math.floor(Math.random() * this.childNodes.length)];
+    target.sing();
   }
 
   getBranchVertices() {
@@ -236,14 +259,6 @@ export class TreeNode extends THREE.Object3D {
   }
 
   createBranches(count) {
-    //let freq = THREE.MathUtils.mapLinear(this.currentLength, 0, 5, 2000, 10);
-    /*
-    let freq = Tone.Frequency(
-      THREE.MathUtils.mapLinear(this.currentLength, 0, 5, 90, 10),
-      "midi"
-    ).toNote();
-    this.synth.triggerAttackRelease(freq, "16n");
-    */
     for (let i = 0; i < count; i++) {
       let direction, length, type, heightIndex, branchIndex, branchingAngle;
       branchingAngle = THREE.MathUtils.randFloat(0, Math.PI * 2);
@@ -255,7 +270,7 @@ export class TreeNode extends THREE.Object3D {
           0,
           Math.PI / 16
         );
-        length = THREE.MathUtils.randFloat(2, 4);
+        length = this.tree.baseHeight;
         type = NodeType.Trunk;
         heightIndex = 1;
         branchIndex = 0;
@@ -366,12 +381,37 @@ function rotateDirection(direction, axisAngle, amount, variation) {
   return newDirection;
 }
 
-function generateColours() {
-  let hue = THREE.MathUtils.randFloat(0, 360);
+function generateColours(length) {
+  let hue = THREE.MathUtils.mapLinear(length, 2, 4, 360, 0); //Map length to hue
   let colours = {
     nodeColour: new THREE.Color(`hsl(${hue}, 90%, 66%)`),
     lineColour: new THREE.Color(`hsl(${hue}, 90%, 90%)`),
     lightColour: new THREE.Color(`hsl(${hue}, 90%, 50%)`),
   };
   return colours;
+}
+
+const baseFreq = 440;
+
+function lengthToPitch(length) {
+  let freq = baseFreq / length;
+  let note = Tone.Frequency(freq).toMidi();
+  //let note = Tone.Frequency(pitch, "midi").toNote();
+  note = quantizeNote(note, scale);
+
+  note = Tone.Frequency(note, "midi").toNote();
+
+  return note;
+}
+
+const scale = [0, 2, 4, 5, 7, 9, 11];
+
+function quantizeNote(note, scale) {
+  let degree = note % 12;
+  let octave = Math.floor(note / 12) * 12;
+  let closest = scale.sort(
+    (a, b) => Math.abs(degree - a) - Math.abs(degree - b)
+  )[0];
+  let quantizedNote = octave + closest;
+  return quantizedNote;
 }
