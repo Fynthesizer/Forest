@@ -17,4 +17,4 @@
   - Scale selection
   - Timbre selection
 
-  Skybox courtesy of this sick skybox generator: https://github.com/wwwtyro/space-3d
+Skybox courtesy of this sick skybox generator: https://github.com/wwwtyro/space-3d
