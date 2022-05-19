@@ -9,21 +9,10 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-/*
-TODO:
-* Make trees more tree-like ✔️
-* Figure out the musical aspect
-* Figure out the visual aspect
-* More interesting landscape ✔️
-* More unique skybox
-* Optimization ✔️
-  * Mesh instancing of nodes? ✔️
-*/
-
 const maxTrees = 20;
 const lightColour = new THREE.Color("#badefc");
 const lightIntensity = 0.25;
-const reverbDecay = 10;
+const reverbDecay = 15;
 //const terrainModel = require("./assets/terrain.glb");
 
 function importAll(r) {
@@ -144,15 +133,14 @@ function onPointerMove(event) {
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
-function onClick() {
+function onClick(event) {
   controls.lock();
   if (controls.isLocked) {
-    //raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-    //const intersections = raycaster.intersectObjects(scene.children);
-    //intersection = intersections.length > 0 ? intersections[0] : null;
-    if (canPlantTree()) {
+    if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
       trees.add(tree);
+    } else if (event.button == 2) {
+      clearTrees();
     }
   }
 }
@@ -173,7 +161,7 @@ function updateCursor() {
   intersection = intersections.length > 0 ? intersections[0] : null;
   if (canPlantTree()) {
     cursor.visible = true;
-    cursor.position.copy(intersection.point);
+    cursor.position.lerp(intersection.point, 0.75);
   } else {
     cursor.visible = false;
   }
@@ -194,6 +182,12 @@ function canPlantTree() {
   if (distance < 4) return false;
   if (trees.children.length >= maxTrees) return false;
   return true;
+}
+
+function clearTrees() {
+  //Actual clear trees function will go here
+  //Currently, this only removes them visually
+  trees.clear();
 }
 
 const sizes = {

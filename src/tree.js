@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { TOUCH } from "three";
 import * as Tone from "tone";
 import { listener } from "./script.js";
+import { scales, lengthToPitch } from "./music.js";
 
 const NodeType = {
   Root: 0,
@@ -21,6 +22,9 @@ const windSpeed = 0.0005;
 const windAmount = 0.01;
 
 const oscType = "pulse";
+const arpRate = 200;
+const baseFreq = 400;
+const scale = scales.majorPent;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
 
@@ -30,6 +34,7 @@ export class Tree extends THREE.Object3D {
     this.position.copy(position);
     this.nodes = [];
     this.tips = []; //Currently growing nodes
+    this.leaves = []; //Nodes at the very end of the tree
     this.name = "Tree";
 
     this.growing = true;
@@ -66,7 +71,7 @@ export class Tree extends THREE.Object3D {
     this.add(this.nodesMesh);
 
     //Light
-    this.light = new THREE.PointLight(this.colours.lightColour, 1, 10);
+    this.light = new THREE.PointLight(this.colours.lightColour, 0, 10);
     this.light.position.set(0, 1, 0);
     this.add(this.light);
 
@@ -77,19 +82,46 @@ export class Tree extends THREE.Object3D {
     this.synth.oscillator.type = oscType;
     this.voice.setNodeSource(this.synth.output);
     this.add(this.voice);
-    this.timer = setInterval(this.startArpeggio.bind(this), 5000);
+    this.timer;
   }
 
   update() {
     this.updateLines();
     this.updateNodes();
-    this.tips.forEach((tip) => tip.grow());
-    this.light.intensity = 1 + this.root.resonance * 2;
-    //if (this.light.intensity > 1) this.light.intensity -= 0.02;
+    this.updateLight();
+    if (this.growing) this.grow();
+  }
+
+  grow() {
+    if (this.tips.length > 0) this.tips.forEach((tip) => tip.grow());
+    else this.growthFinished();
+  }
+
+  growthFinished() {
+    this.growing = false;
+    this.startArpeggio();
+    this.timer = setInterval(this.startArpeggio.bind(this), 5000);
+  }
+
+  updateLight() {
+    let baseIntensity = 0;
+    if (this.root.childNodes[0] != null)
+      baseIntensity =
+        this.root.childNodes[0].currentLength /
+        this.root.childNodes[0].maxLength;
+    this.light.intensity = baseIntensity + this.root.resonance * 2;
   }
 
   startArpeggio() {
-    this.root.sing();
+    //let direction = Math.random() > 0.5 ? "UP" : "DOWN";
+    let direction = "UP";
+    let startNode = direction == "UP" ? this.root : this.randomLeaf();
+    startNode.sendSignal(direction);
+  }
+
+  randomLeaf() {
+    let leafIndex = Math.floor(Math.random() * this.leaves.length);
+    return this.leaves[leafIndex];
   }
 
   playNote(note) {
@@ -202,6 +234,7 @@ export class TreeNode extends THREE.Object3D {
     //End of branch
     else {
       this.tree.tips.splice(this.tree.tips.indexOf(this), 1);
+      this.tree.leaves.push(this);
       //this.tree.logNodeData();
       //this.tree.stopGrowth();
     }
@@ -225,18 +258,26 @@ export class TreeNode extends THREE.Object3D {
   }
 
   sing() {
-    this.resonance = 1;
-    if (this.type != NodeType.Root) {
-      let pitch = lengthToPitch(this.maxLength);
-      this.tree.playNote(pitch);
-    }
-    if (this.childNodes.length > 0) setTimeout(this.sendSignal.bind(this), 200);
+    let pitch = lengthToPitch(this.maxLength, baseFreq, scale);
+    //console.log(pitch);
+    this.tree.playNote(pitch);
+    //if (this.childNodes.length > 0) setTimeout(this.sendSignal.bind(this), 200);
   }
 
-  sendSignal() {
-    let target =
-      this.childNodes[Math.floor(Math.random() * this.childNodes.length)];
-    target.sing();
+  sendSignal(direction) {
+    if (this.type != NodeType.Root) this.sing();
+    this.resonance = 1;
+    let target;
+    if (direction == "UP" && this.childNodes.length > 0) {
+      target =
+        this.childNodes[Math.floor(Math.random() * this.childNodes.length)];
+    } else if (direction == "DOWN" && this.parent.name != "Tree") {
+      target = this.parent;
+    }
+    if (target != null)
+      setTimeout(function () {
+        target.sendSignal(direction);
+      }, arpRate);
   }
 
   getBranchVertices() {
@@ -389,38 +430,4 @@ function generateColours(length) {
     lightColour: new THREE.Color(`hsl(${hue}, 90%, 50%)`),
   };
   return colours;
-}
-
-const baseFreq = 400;
-
-function lengthToPitch(length) {
-  let freq = baseFreq / length;
-  let note = Tone.Frequency(freq).toMidi();
-  //let note = Tone.Frequency(pitch, "midi").toNote();
-  note = quantizeNote(note, scales.minor);
-
-  note = Tone.Frequency(note, "midi").toNote();
-
-  return note;
-}
-
-const scales = {
-  major: [0, 2, 4, 5, 7, 9, 11],
-  minor: [0, 2, 3, 5, 7, 8, 10],
-  harmMinor: [0, 2, 3, 5, 7, 8, 11],
-  majorPent: [0, 2, 4, 7, 9],
-  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-  wholeTone: [0, 2, 4, 6, 8, 10],
-  persian: [0, 1, 4, 5, 6, 8, 11],
-  lydian: [0, 2, 4, 6, 7, 9, 11],
-};
-
-function quantizeNote(note, scale) {
-  let degree = note % 12;
-  let octave = Math.floor(note / 12) * 12;
-  let closest = scale.sort(
-    (a, b) => Math.abs(degree - a) - Math.abs(degree - b)
-  )[0];
-  let quantizedNote = octave + closest;
-  return quantizedNote;
 }
