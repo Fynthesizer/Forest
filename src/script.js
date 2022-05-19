@@ -11,9 +11,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const maxTrees = 20;
 const lightColour = new THREE.Color("#badefc");
-const lightIntensity = 0.25;
+const lightIntensity = 0.6;
 const reverbDecay = 15;
-//const terrainModel = require("./assets/terrain.glb");
 
 function importAll(r) {
   let images = {};
@@ -26,9 +25,6 @@ function importAll(r) {
 const images = importAll(
   require.context("./assets", false, /\.(png|jpe?g|svg)$/)
 );
-//const terrainModel = require('./')
-
-console.log(images["top.png"]);
 
 let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass;
@@ -56,8 +52,10 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  controls = new PointerLockControls(camera, renderer.domElement);
+
   //Effects
-  //scene.fog = new THREE.Fog("#101927", 0.25, 100);
+  scene.fog = new THREE.Fog("#25386b", 0.25, 900);
   composer = new EffectComposer(renderer);
   renderPass = new RenderPass(scene, camera);
   bloomPass = new UnrealBloomPass(
@@ -71,7 +69,6 @@ function init() {
     window.innerHeight * renderer.getPixelRatio()
   );
   composer.addPass(renderPass);
-
   composer.addPass(bloomPass);
   composer.addPass(smaaPass);
 
@@ -87,8 +84,6 @@ function init() {
   reverb = new Tone.Reverb(reverbDecay);
   Tone.connect(listener.gain, reverb);
   reverb.connect(Tone.getDestination());
-
-  controls = new PointerLockControls(camera, renderer.domElement);
 
   //Ground
   modelLoader = new GLTFLoader();
@@ -117,8 +112,9 @@ function init() {
   scene.background = skyboxTexture;
 
   //Lights
-  ambientLight = new THREE.AmbientLight(lightColour, lightIntensity);
+  ambientLight = new THREE.AmbientLight(lightColour, 0.1);
   directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
+  directionalLight.rotation.set(-Math.PI, 0, -Math.PI);
   scene.add(ambientLight);
   scene.add(directionalLight);
 
@@ -126,9 +122,6 @@ function init() {
   scene.add(trees);
 }
 function onPointerMove(event) {
-  // calculate pointer position in normalized device coordinates
-  // (-1 to +1) for both components
-
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
@@ -165,13 +158,6 @@ function updateCursor() {
   } else {
     cursor.visible = false;
   }
-
-  //const nodeIntersections = raycaster.intersectObjects(trees.children);
-  //console.log(nodeIntersections);
-  //const nodeIntersection =
-  //   nodeIntersections.length > 0 ? nodeIntersections[0] : null;
-  //if (nodeIntersection != null && nodeIntersection.object.name == "Node")
-  // console.log("Pointing at node");
 }
 
 function canPlantTree() {
