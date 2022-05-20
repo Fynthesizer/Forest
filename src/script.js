@@ -2,6 +2,7 @@ import "./style.css";
 import { Tree, TreeNode } from "./tree.js";
 import * as THREE from "three";
 import * as Tone from "tone";
+import anime from "animejs/lib/anime.es";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -11,8 +12,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const maxTrees = 20;
 const lightColour = new THREE.Color("#badefc");
-const lightIntensity = 0.6;
-const reverbDecay = 15;
+const lightIntensity = 0.8;
+const reverbSettings = { decay: 15, wet: 0.6 };
 
 function importAll(r) {
   let images = {};
@@ -29,12 +30,12 @@ const images = importAll(
 let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass;
 let raycaster, pointer, intersection, controls;
-let ground, skybox, cursor;
+let terrain, field, skybox, cursor;
 let modelLoader;
 let ambientLight, directionalLight;
 let trees;
 export let listener;
-let reverb;
+let reverb, lpf;
 
 const startScreen = document.getElementById("startScreen");
 
@@ -54,7 +55,10 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  //Controls
   controls = new PointerLockControls(camera, renderer.domElement);
+  controls.addEventListener("unlock", onUnlock);
+  controls.addEventListener("lock", onLock);
 
   //Effects
   scene.fog = new THREE.Fog("#25386b", 0.25, 900);
@@ -83,16 +87,21 @@ function init() {
   listener = new THREE.AudioListener();
   camera.add(listener);
   Tone.setContext(listener.context);
-  reverb = new Tone.Reverb(reverbDecay);
+  reverb = new Tone.Reverb();
+  reverb.set(reverbSettings);
+  lpf = new Tone.Filter(10000, "lowpass");
+  listener.gain.disconnect();
   Tone.connect(listener.gain, reverb);
-  reverb.connect(Tone.getDestination());
+  Tone.connect(reverb, lpf);
+  lpf.connect(Tone.getDestination());
 
-  //Ground
+  //Terrain
   modelLoader = new GLTFLoader();
   modelLoader.load("./terrain.glb", (model) => {
-    ground = model.scene;
-    ground.scale.setScalar(2);
-    scene.add(ground);
+    terrain = model.scene;
+    terrain.scale.setScalar(2);
+    scene.add(terrain);
+    field = terrain.children[0];
   });
 
   //Cursor
@@ -129,7 +138,7 @@ function onPointerMove(event) {
 }
 
 function onClick(event) {
-  if (!controls.isLocked) begin();
+  if (!controls.isLocked) controls.lock();
   else {
     if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
@@ -140,16 +149,38 @@ function onClick(event) {
   }
 }
 
-function begin() {
-  controls.lock();
-  startScreen.remove();
+function onUnlock() {
+  lpf.frequency.rampTo(400, 0.5);
+  console.log("Unlocked");
+  anime({
+    targets: ["#menuScreen"],
+    opacity: 1,
+    duration: 200,
+    easing: "linear",
+  });
+}
+
+function onLock() {
+  lpf.frequency.rampTo(10000, 0.5);
+  anime({
+    targets: ["#startScreen"],
+    opacity: 0,
+    duration: 500,
+    easing: "linear",
+  });
+  anime({
+    targets: ["#menuScreen"],
+    opacity: 0,
+    duration: 200,
+    easing: "linear",
+  });
 }
 
 var animate = function () {
   requestAnimationFrame(animate);
   composer.render();
   //renderer.render(scene, camera);
-  if (ground != null) updateCursor();
+  if (terrain != null) updateCursor();
 
   trees.children.forEach((tree) => {
     tree.update();
@@ -158,7 +189,7 @@ var animate = function () {
 
 function updateCursor() {
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  const intersections = raycaster.intersectObjects(ground.children);
+  const intersections = raycaster.intersectObject(field);
   intersection = intersections.length > 0 ? intersections[0] : null;
   if (canPlantTree()) {
     cursor.visible = true;

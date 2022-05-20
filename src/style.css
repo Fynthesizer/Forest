@@ -29,15 +29,17 @@ body {
 .overlay {
   position: absolute;
   width: 100%;
-  top: 45%;
+  height: 100%;
   text-align: center;
   color: white;
   font-family: "Nunito", sans-serif;
   font-size: 1em;
   cursor: default;
+  user-select: none;
 }
 
 #startTitle {
+  margin-top: 15%;
   font-size: 6em;
   margin-bottom: 0.2em;
   letter-spacing: 0.2em;
@@ -46,4 +48,9 @@ body {
 
 #startHelp {
   font-size: 1.5em;
+}
+
+#menuScreen {
+  opacity: 0;
+  background-color: rgba(0, 0, 0, 0.5);
 }

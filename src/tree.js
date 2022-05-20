@@ -12,7 +12,7 @@ const NodeType = {
 };
 
 const maxHeight = 6;
-const maxBranches = 4;
+const maxBranches = 3;
 const branchGrowthRate = 0.02;
 const trunkGrowthRate = 0.04;
 const twistFactor = Math.PI * 1.33;
@@ -24,7 +24,7 @@ const windAmount = 0.01;
 const oscType = "pulse";
 const arpRate = 200;
 const baseFreq = 400;
-const scale = scales.prometheus;
+const scale = scales.minor;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
 
@@ -172,6 +172,7 @@ export class Tree extends THREE.Object3D {
       matrix.makeScale(size, size, size);
       matrix.setPosition(position.x, position.y, position.z);
       this.nodesMesh.setMatrixAt(index, matrix);
+      //let colour = new THREE.Color(`hsl(${360 / node.maxLength}, 90%, 66%)`);
       this.nodesMesh.setColorAt(index, this.colours.nodeColour);
     });
     this.nodesMesh.instanceMatrix.needsUpdate = true;
@@ -216,6 +217,8 @@ export class TreeNode extends THREE.Object3D {
     this.maxLength = length;
     this.windOffset =
       (this.position.x + this.position.y + this.position.z) * 10;
+
+    this.pitch = lengthToPitch(this.maxLength, baseFreq, scale);
   }
 
   grow() {
@@ -258,10 +261,7 @@ export class TreeNode extends THREE.Object3D {
   }
 
   sing() {
-    let pitch = lengthToPitch(this.maxLength, baseFreq, scale);
-    //console.log(pitch);
-    this.tree.playNote(pitch);
-    //if (this.childNodes.length > 0) setTimeout(this.sendSignal.bind(this), 200);
+    this.tree.playNote(this.pitch);
   }
 
   sendSignal(direction) {
