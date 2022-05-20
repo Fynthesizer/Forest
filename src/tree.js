@@ -24,7 +24,7 @@ const windAmount = 0.01;
 const oscType = "pulse";
 const arpRate = 200;
 const baseFreq = 400;
-const scale = scales.majorPent;
+const scale = scales.prometheus;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
 

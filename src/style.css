@@ -1,20 +1,49 @@
-*
-{
-    margin: 0;
-    padding: 0;
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200&family=Zen+Loop&display=swap");
+* {
+  margin: 0;
+  padding: 0;
 }
 
 html,
-body
-{
-    height: 100vh;
-    font-family: 'Poppins';
+body {
+  height: 100vh;
+  font-family: "Poppins";
 }
 
-.webgl
-{
-    position: fixed;
-    top: 0;
-    left: 0;
-    outline: none;
+.webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  outline: none;
+}
+
+#menu {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  color: white;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  top: 45%;
+  text-align: center;
+  color: white;
+  font-family: "Nunito", sans-serif;
+  font-size: 1em;
+  cursor: default;
+}
+
+#startTitle {
+  font-size: 6em;
+  margin-bottom: 0.2em;
+  letter-spacing: 0.2em;
+  font-family: "Zen Loop", cursive;
+}
+
+#startHelp {
+  font-size: 1.5em;
 }

@@ -36,6 +36,8 @@ let trees;
 export let listener;
 let reverb;
 
+const startScreen = document.getElementById("startScreen");
+
 function init() {
   //Basics
   scene = new THREE.Scene();
@@ -127,8 +129,8 @@ function onPointerMove(event) {
 }
 
 function onClick(event) {
-  controls.lock();
-  if (controls.isLocked) {
+  if (!controls.isLocked) begin();
+  else {
     if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
       trees.add(tree);
@@ -137,6 +139,12 @@ function onClick(event) {
     }
   }
 }
+
+function begin() {
+  controls.lock();
+  startScreen.remove();
+}
+
 var animate = function () {
   requestAnimationFrame(animate);
   composer.render();
