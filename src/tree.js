@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { TOUCH } from "three";
 import * as Tone from "tone";
-import { listener } from "./script.js";
+import { listener, scale, oscType } from "./script.js";
 import { scales, lengthToPitch } from "./music.js";
 
 const NodeType = {
@@ -21,10 +21,9 @@ const twistVariation = Math.PI / 4;
 const windSpeed = 0.0005;
 const windAmount = 0.01;
 
-const oscType = "pulse";
 const arpRate = 200;
+const arpPeriod = 3200;
 const baseFreq = 400;
-const scale = scales.minor;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
 
@@ -100,7 +99,7 @@ export class Tree extends THREE.Object3D {
   growthFinished() {
     this.growing = false;
     this.startArpeggio();
-    this.timer = setInterval(this.startArpeggio.bind(this), 5000);
+    this.timer = setInterval(this.startArpeggio.bind(this), arpPeriod);
   }
 
   updateLight() {
@@ -217,8 +216,6 @@ export class TreeNode extends THREE.Object3D {
     this.maxLength = length;
     this.windOffset =
       (this.position.x + this.position.y + this.position.z) * 10;
-
-    this.pitch = lengthToPitch(this.maxLength, baseFreq, scale);
   }
 
   grow() {
@@ -261,7 +258,7 @@ export class TreeNode extends THREE.Object3D {
   }
 
   sing() {
-    this.tree.playNote(this.pitch);
+    this.tree.playNote(lengthToPitch(this.maxLength, baseFreq, scale));
   }
 
   sendSignal(direction) {

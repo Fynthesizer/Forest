@@ -36,10 +36,13 @@ body {
   font-size: 1em;
   cursor: default;
   user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 #startTitle {
-  margin-top: 15%;
   font-size: 6em;
   margin-bottom: 0.2em;
   letter-spacing: 0.2em;
@@ -53,4 +56,36 @@ body {
 #menuScreen {
   opacity: 0;
   background-color: rgba(0, 0, 0, 0.5);
+  margin: auto;
+}
+
+.scaleSelect {
+  position: relative;
+  width: 10em;
+  margin: 0;
+}
+
+.scaleSelect li {
+  list-style: none;
+  width: 100%;
+}
+
+.scaleSelect button {
+  width: 100%;
+}
+
+button {
+  border: none;
+  background-color: black;
+  color: white;
+  height: 2em;
+  padding: 0.2em;
+  margin: 0.2em;
+  transition: 0.1s;
+}
+
+button:hover {
+  border: none;
+  background-color: white;
+  color: black;
 }

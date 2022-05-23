@@ -14,5 +14,6 @@
 - Options menu
   - Scale selection
   - Timbre selection
+- Loading screen
 
 Skybox courtesy of this sick skybox generator: https://github.com/wwwtyro/space-3d

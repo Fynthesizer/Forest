@@ -12,6 +12,17 @@
       <div id="startTitle">FOREST</div>
       <div id="startHelp">click to plant trees</div>
     </div>
-    <div id="menuScreen" class="overlay"></div>
+    <div id="menuScreen" class="overlay">
+      Scale
+      <menu class="scaleSelect">
+        <li><button onclick="setScale('diatonic')">Diatonic</button></li>
+        <li><button onclick="setScale('pentatonic')">Pentatonic</button></li>
+        <li><button onclick="setScale('wholeTone')">Whole Tone</button></li>
+        <li><button onclick="setScale('prometheus')">Prometheus</button></li>
+        <li><button onclick="setScale('hirajoshi')">Hirajōshi</button></li>
+        <li><button onclick="setScale('iwato')">Iwato</button></li>
+      </menu>
+      <button onclick="setState('playing')">Resume</button>
+    </div>
   </body>
 </html>

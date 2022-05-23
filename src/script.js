@@ -1,5 +1,6 @@
 import "./style.css";
 import { Tree, TreeNode } from "./tree.js";
+import { scales } from "./music.js";
 import * as THREE from "three";
 import * as Tone from "tone";
 import anime from "animejs/lib/anime.es";
@@ -31,13 +32,38 @@ let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass;
 let raycaster, pointer, intersection, controls;
 let terrain, field, skybox, cursor;
-let modelLoader;
+let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
 export let listener;
 let reverb, lpf;
 
-const startScreen = document.getElementById("startScreen");
+let loaded = false;
+let state = "title";
+
+export let scale = scales.minor;
+export let oscType = "pulse";
+
+THREE.DefaultLoadingManager.onProgress = function (
+  url,
+  itemsLoaded,
+  itemsTotal
+) {
+  console.log(
+    "Loading file: " +
+      url +
+      ".\nLoaded " +
+      itemsLoaded +
+      " of " +
+      itemsTotal +
+      " files."
+  );
+};
+
+THREE.DefaultLoadingManager.onLoad = function () {
+  console.log("Loading Complete!");
+  loaded = true;
+};
 
 function init() {
   //Basics
@@ -111,7 +137,7 @@ function init() {
   scene.add(cursor);
 
   //Skybox
-  const skyboxLoader = new THREE.CubeTextureLoader();
+  skyboxLoader = new THREE.CubeTextureLoader();
   const skyboxTexture = skyboxLoader.load([
     images["right.png"].default,
     images["left.png"].default,
@@ -132,14 +158,18 @@ function init() {
   trees = new THREE.Group();
   scene.add(trees);
 }
+
+window.addEventListener("pointerdown", onClick);
+window.addEventListener("pointermove", onPointerMove);
+
 function onPointerMove(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
 function onClick(event) {
-  if (!controls.isLocked) controls.lock();
-  else {
+  if (state == "title") setState("playing");
+  else if (state == "playing") {
     if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
       trees.add(tree);
@@ -149,15 +179,23 @@ function onClick(event) {
   }
 }
 
+window.setState = setState;
+function setState(newState) {
+  state = newState;
+  if (state == "playing") controls.lock();
+  else if (state == "menu") {
+    lpf.frequency.rampTo(400, 0.5);
+    anime({
+      targets: ["#menuScreen"],
+      opacity: 1,
+      duration: 200,
+      easing: "linear",
+    });
+  }
+}
+
 function onUnlock() {
-  lpf.frequency.rampTo(400, 0.5);
-  console.log("Unlocked");
-  anime({
-    targets: ["#menuScreen"],
-    opacity: 1,
-    duration: 200,
-    easing: "linear",
-  });
+  setState("menu");
 }
 
 function onLock() {
@@ -178,7 +216,7 @@ function onLock() {
 
 var animate = function () {
   requestAnimationFrame(animate);
-  composer.render();
+  if (loaded) composer.render();
   //renderer.render(scene, camera);
   if (terrain != null) updateCursor();
 
@@ -220,8 +258,6 @@ const sizes = {
   height: window.innerHeight,
 };
 
-window.addEventListener("click", onClick);
-window.addEventListener("pointermove", onPointerMove);
 window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
@@ -236,6 +272,11 @@ window.addEventListener("resize", () => {
   composer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
+
+window.setScale = setScale;
+function setScale(newScale) {
+  scale = scales[newScale];
+}
 
 init();
 animate();
