@@ -4,7 +4,10 @@ const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 
 module.exports = {
-  entry: path.resolve(__dirname, "../src/script.js"),
+  entry: {
+    index: "./src/script.js",
+    another: "./src/ui.jsx",
+  },
   output: {
     filename: "bundle.[contenthash].js",
     path: path.resolve(__dirname, "../dist"),
@@ -30,7 +33,7 @@ module.exports = {
 
       // JS
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ["babel-loader"],
       },
@@ -39,6 +42,19 @@ module.exports = {
       {
         test: /\.css$/,
         use: [MiniCSSExtractPlugin.loader, "css-loader"],
+      },
+
+      //SCSS
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
+        ],
       },
 
       // Images
@@ -80,5 +96,8 @@ module.exports = {
         ],
       },
     ],
+  },
+  resolve: {
+    extensions: ["*", ".js", ".jsx"],
   },
 };

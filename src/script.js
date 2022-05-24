@@ -11,7 +11,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-const maxTrees = 20;
+const maxTrees = 10;
 const lightColour = new THREE.Color("#badefc");
 const lightIntensity = 0.8;
 const reverbSettings = { decay: 15, wet: 0.6 };
@@ -41,8 +41,9 @@ let reverb, lpf;
 let loaded = false;
 let state = "title";
 
-export let scale = scales.minor;
+export let scale = scales.diatonic;
 export let oscType = "pulse";
+let menuFilterFreq = 800;
 
 THREE.DefaultLoadingManager.onProgress = function (
   url,
@@ -181,10 +182,10 @@ function onClick(event) {
 
 window.setState = setState;
 function setState(newState) {
-  state = newState;
-  if (state == "playing") controls.lock();
-  else if (state == "menu") {
-    lpf.frequency.rampTo(400, 0.5);
+  if (newState == "playing") controls.lock();
+  else if (newState == "menu") {
+    state = "menu";
+    lpf.frequency.rampTo(menuFilterFreq, 0.5);
     anime({
       targets: ["#menuScreen"],
       opacity: 1,
@@ -199,6 +200,7 @@ function onUnlock() {
 }
 
 function onLock() {
+  state = "playing";
   lpf.frequency.rampTo(10000, 0.5);
   anime({
     targets: ["#startScreen"],
@@ -244,7 +246,7 @@ function canPlantTree() {
     .distanceTo(intersection.point);
   if (distance < 4) return false;
   if (trees.children.length >= maxTrees) return false;
-  return true;
+  if (state == "playing") return true;
 }
 
 function clearTrees() {
@@ -276,6 +278,14 @@ window.addEventListener("resize", () => {
 window.setScale = setScale;
 function setScale(newScale) {
   scale = scales[newScale];
+}
+
+window.setOsc = setOsc;
+function setOsc(newOsc) {
+  oscType = newOsc;
+  trees.children.forEach((tree) => {
+    tree.synth.oscillator.type = newOsc;
+  });
 }
 
 init();

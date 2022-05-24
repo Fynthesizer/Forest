@@ -59,19 +59,8 @@ body {
   margin: auto;
 }
 
-.scaleSelect {
-  position: relative;
-  width: 10em;
-  margin: 0;
-}
-
-.scaleSelect li {
-  list-style: none;
-  width: 100%;
-}
-
-.scaleSelect button {
-  width: 100%;
+#settings {
+  width: 30rem;
 }
 
 button {
