@@ -26,6 +26,7 @@ const arpPeriod = 3200;
 const baseFreq = 400;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
+const nodeMat = new THREE.MeshBasicMaterial();
 
 export class Tree extends THREE.Object3D {
   constructor(position) {
@@ -63,8 +64,7 @@ export class Tree extends THREE.Object3D {
 
     //Node Meshes
     this.nodeDummy = new THREE.Object3D();
-    this.nodeMat = new THREE.MeshBasicMaterial();
-    this.nodesMesh = new THREE.InstancedMesh(nodeGeo, this.nodeMat, 300);
+    this.nodesMesh = new THREE.InstancedMesh(nodeGeo, nodeMat, 300);
     this.nodesMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.nodesMesh.setColorAt(0, new THREE.Color());
     this.add(this.nodesMesh);
@@ -216,6 +216,8 @@ export class TreeNode extends THREE.Object3D {
     this.maxLength = length;
     this.windOffset =
       (this.position.x + this.position.y + this.position.z) * 10;
+
+    this.timer;
   }
 
   grow() {
@@ -272,7 +274,7 @@ export class TreeNode extends THREE.Object3D {
       target = this.parent;
     }
     if (target != null)
-      setTimeout(function () {
+      this.timer = setTimeout(function () {
         target.sendSignal(direction);
       }, arpRate);
   }
@@ -398,10 +400,6 @@ export class TreeNode extends THREE.Object3D {
       this.tree.tips.push(newNode);
     }
     this.tree.tips.splice(this.tree.tips.indexOf(this), 1);
-  }
-
-  message(message) {
-    this.parent.message(message);
   }
 }
 

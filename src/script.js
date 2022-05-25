@@ -17,18 +17,6 @@ const lightColour = new THREE.Color("#badefc");
 const lightIntensity = 0.8;
 const reverbSettings = { decay: 15, wet: 0.6 };
 
-function importAll(r) {
-  let images = {};
-  r.keys().map((item, index) => {
-    images[item.replace("./", "")] = r(item);
-  });
-  return images;
-}
-
-const images = importAll(
-  require.context("./assets", false, /\.(png|jpe?g|svg)$/)
-);
-
 let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
@@ -148,12 +136,12 @@ function init() {
   //Skybox
   skyboxLoader = new THREE.CubeTextureLoader();
   const skyboxTexture = skyboxLoader.load([
-    images["right.png"].default,
-    images["left.png"].default,
-    images["top.png"].default,
-    images["bottom.png"].default,
-    images["front.png"].default,
-    images["back.png"].default,
+    "./right.jpg",
+    "./left.jpg",
+    "./top.jpg",
+    "./bottom.jpg",
+    "./front.jpg",
+    "./back.jpg",
   ]);
   scene.background = skyboxTexture;
 
@@ -182,8 +170,6 @@ function onClick(event) {
     if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
       trees.add(tree);
-    } else if (event.button == 2) {
-      clearTrees();
     }
   }
 }
@@ -273,9 +259,25 @@ function canPlantTree() {
   if (state == "playing") return true;
 }
 
+window.clearTrees = clearTrees;
 function clearTrees() {
-  //Actual clear trees function will go here
-  //Currently, this only removes them visually
+  trees.children.forEach((tree) => {
+    tree.nodes.forEach((node) => {
+      node.clear(); //Remove all children
+      clearTimeout(node.timer); //Stop timer
+      for (const key in node) {
+        delete node[key]; //Delete all properties
+      }
+    });
+    tree.synth.dispose(); //Dispose of synth
+    tree.clear(); //Remove all children
+    tree.lineGeo.dispose(); //Dispose of line geometry
+    tree.lineMat.dispose(); //Dispose of line material
+    clearInterval(tree.timer); //Stop timer
+    for (const key in tree) {
+      delete tree[key]; //Delete all properties
+    }
+  });
   trees.clear();
 }
 

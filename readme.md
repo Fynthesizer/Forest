@@ -11,9 +11,15 @@
 - Optimization ✔️
   - Mesh instancing of nodes? ✔️
 - VR Support?
-- Options menu
-  - Scale selection
-  - Timbre selection
+- Options menu ✔️
+  - Scale selection ✔️
+  - Timbre selection ✔️
 - Loading screen
+
+**BUGS:**
+
+- Settings menu is able to be interactive with when invisible
+- Nodes sometimes emit varying pitches
+- Clearing trees only destroys the rendered object
 
 Skybox courtesy of this sick skybox generator: https://github.com/wwwtyro/space-3d
