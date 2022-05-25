@@ -9,6 +9,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
+import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const maxTrees = 10;
@@ -29,7 +30,7 @@ const images = importAll(
 );
 
 let scene, camera, renderer;
-let composer, renderPass, bloomPass, smaaPass;
+let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
 let terrain, field, skybox, cursor;
 let modelLoader, skyboxLoader;
@@ -101,9 +102,16 @@ function init() {
     window.innerWidth * renderer.getPixelRatio(),
     window.innerHeight * renderer.getPixelRatio()
   );
+  bokehPass = new BokehPass(scene, camera, {
+    focus: 1.0,
+    aperture: 0.025,
+    maxblur: 0.0,
+  });
+
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
   composer.addPass(smaaPass);
+  composer.addPass(bokehPass);
 
   //Raycaster
   raycaster = new THREE.Raycaster();
@@ -185,6 +193,13 @@ function setState(newState) {
   if (newState == "playing") controls.lock();
   else if (newState == "menu") {
     state = "menu";
+    bokehPass.enabled = true;
+    anime({
+      targets: bokehPass.uniforms["maxblur"],
+      value: 0.01,
+      duration: 200,
+      easing: "linear",
+    });
     lpf.frequency.rampTo(menuFilterFreq, 0.5);
     anime({
       targets: ["#menuScreen"],
@@ -202,6 +217,15 @@ function onUnlock() {
 function onLock() {
   state = "playing";
   lpf.frequency.rampTo(10000, 0.5);
+  anime({
+    targets: bokehPass.uniforms["maxblur"],
+    value: 0,
+    duration: 200,
+    easing: "linear",
+    complete: () => {
+      bokehPass.enabled = false;
+    },
+  });
   anime({
     targets: ["#startScreen"],
     opacity: 0,
