@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { TOUCH } from "three";
 import * as Tone from "tone";
 import { listener, scale, oscType } from "./script.js";
 import { scales, lengthToPitch } from "./music.js";
+import anime from "animejs/lib/anime.es";
 
 const NodeType = {
   Root: 0,
@@ -78,7 +78,7 @@ export class Tree extends THREE.Object3D {
     this.voice = new THREE.PositionalAudio(listener);
     this.synth = new Tone.Synth();
     this.synth.envelope.attack = 0.5;
-    this.synth.oscillator.type = oscType;
+    this.synth.oscillator.type = oscType.key;
     this.voice.setNodeSource(this.synth.output);
     this.add(this.voice);
     this.timer;
@@ -89,6 +89,16 @@ export class Tree extends THREE.Object3D {
     this.updateNodes();
     this.updateLight();
     if (this.growing) this.grow();
+  }
+
+  beginDeletion() {
+    //Doesn't work yet
+    anime({
+      targets: this.nodes,
+      currentLength: 0,
+      duration: 200,
+      easing: "linear",
+    });
   }
 
   grow() {
@@ -348,8 +358,9 @@ export class TreeNode extends THREE.Object3D {
             heightIndex = this.heightIndex;
             branchIndex = 1;
             length =
-              (1.5 - this.heightIndex * 0.1) *
-              THREE.MathUtils.randFloat(0.8, 1.2);
+              this.tree.baseHeight * THREE.MathUtils.randFloat(0.6, 0.8) -
+              this.heightIndex * 0.2;
+
             branchingAngle = THREE.MathUtils.randFloat(0, Math.PI * 2);
           }
         } else {

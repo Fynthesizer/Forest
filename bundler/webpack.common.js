@@ -6,7 +6,6 @@ const path = require("path");
 module.exports = {
   entry: {
     index: "./src/script.js",
-    another: "./src/ui.jsx",
   },
   output: {
     filename: "bundle.[contenthash].js",

@@ -6,6 +6,74 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./style.css";
 import "./theme.scss";
 import { oscillators, scales } from "./music";
+import { oscType, scale } from "./script.js";
+
+let domContainer = document.querySelector("#UI");
+const root = ReactDOM.createRoot(domContainer);
+
+export function renderUI(state) {
+  root.render(UI(state));
+}
+
+function UI(state) {
+  return (
+    <div>
+      {state === "menu" ? <SettingsMenu /> : null}
+      {state === "title" ? <TitleScreen /> : null}
+      {state === "loading" ? <LoadingScreen /> : null}
+    </div>
+  );
+}
+
+/*
+export class UI extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { state: state };
+  }
+
+  componentDidMount() {
+    this.setState({ state: state });
+    console.log("mount");
+  }
+  componentDidUpdate() {
+    console.log("update");
+    console.log(state);
+  }
+
+  render() {
+    //if (this.state.state != state) this.setState({ state: state });
+    return (
+      <div>
+        {state === "menu" ? <SettingsMenu /> : null}
+        {state === "title" ? <TitleScreen /> : null}
+        {state === "loading" ? <LoadingScreen /> : null}
+      </div>
+    );
+  }
+}
+*/
+
+class TitleScreen extends React.Component {
+  render() {
+    return (
+      <div className="overlay">
+        <div id="startTitle">Forest</div>
+        <div id="startHelp">click to plant trees</div>
+      </div>
+    );
+  }
+}
+
+class LoadingScreen extends React.Component {
+  render() {
+    return (
+      <div className="overlay">
+        <p>the thing is loading</p>
+      </div>
+    );
+  }
+}
 
 class SettingsMenu extends React.Component {
   constructor(props) {
@@ -25,7 +93,7 @@ class SettingsMenu extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="overlay" id="menuScreen">
         <ScaleSelector />
         <OscSelector />
         <div id="actionButtons">
@@ -64,7 +132,7 @@ class OscSelector extends React.Component {
       <Dropdown onSelect={this.handleSelect}>
         <label>Oscillator</label>
         <Dropdown.Toggle className="dropdownToggle" id="dropdown-basic">
-          {this.state.osc.name}
+          {oscType.name}
         </Dropdown.Toggle>
         <Dropdown.Menu className="dropdownMenu">{listItems}</Dropdown.Menu>
       </Dropdown>
@@ -95,7 +163,7 @@ class ScaleSelector extends React.Component {
       <Dropdown onSelect={this.handleSelect}>
         <label>Scale</label>
         <Dropdown.Toggle className="dropdownToggle" id="dropdown-basic">
-          {this.state.scale.name}
+          {scale.name}
         </Dropdown.Toggle>
 
         <Dropdown.Menu className="dropdownMenu">{listItems}</Dropdown.Menu>
@@ -104,7 +172,4 @@ class ScaleSelector extends React.Component {
   }
 }
 
-let domContainer = document.querySelector("#settings");
-const root = ReactDOM.createRoot(domContainer);
-const element = <SettingsMenu />;
-root.render(element);
+renderUI("loading");

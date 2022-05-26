@@ -1,6 +1,7 @@
 import "./style.css";
-import { Tree, TreeNode } from "./tree.js";
-import { scales } from "./music.js";
+import { Tree } from "./tree.js";
+import { oscillators, scales } from "./music.js";
+import "./ui";
 import * as THREE from "three";
 import * as Tone from "tone";
 import anime from "animejs/lib/anime.es";
@@ -11,6 +12,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { renderUI } from "./ui";
 
 const maxTrees = 10;
 const lightColour = new THREE.Color("#badefc");
@@ -20,7 +22,7 @@ const reverbSettings = { decay: 15, wet: 0.6 };
 let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
-let terrain, field, skybox, cursor;
+let terrain, field, cursor;
 let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
@@ -28,10 +30,11 @@ export let listener;
 let reverb, lpf;
 
 let loaded = false;
-let state = "title";
+export let state = "loading"; //possible states: loading, title, playing, menu
+let canLock = false;
 
 export let scale = scales.diatonic;
-export let oscType = "pulse";
+export let oscType = oscillators.pulse;
 let menuFilterFreq = 800;
 
 THREE.DefaultLoadingManager.onProgress = function (
@@ -52,6 +55,7 @@ THREE.DefaultLoadingManager.onProgress = function (
 
 THREE.DefaultLoadingManager.onLoad = function () {
   console.log("Loading Complete!");
+  setState("title");
   loaded = true;
 };
 
@@ -165,7 +169,7 @@ function onPointerMove(event) {
 }
 
 function onClick(event) {
-  if (state == "title") setState("playing");
+  if (state == "title" && canLock) setState("playing");
   else if (state == "playing") {
     if (event.button == 0 && canPlantTree()) {
       const tree = new Tree(intersection.point);
@@ -174,57 +178,11 @@ function onClick(event) {
   }
 }
 
-window.setState = setState;
-function setState(newState) {
-  if (newState == "playing") controls.lock();
-  else if (newState == "menu") {
-    state = "menu";
-    bokehPass.enabled = true;
-    anime({
-      targets: bokehPass.uniforms["maxblur"],
-      value: 0.01,
-      duration: 200,
-      easing: "linear",
-    });
-    lpf.frequency.rampTo(menuFilterFreq, 0.5);
-    anime({
-      targets: ["#menuScreen"],
-      opacity: 1,
-      duration: 200,
-      easing: "linear",
-    });
-  }
-}
-
 function onUnlock() {
   setState("menu");
 }
 
-function onLock() {
-  state = "playing";
-  lpf.frequency.rampTo(10000, 0.5);
-  anime({
-    targets: bokehPass.uniforms["maxblur"],
-    value: 0,
-    duration: 200,
-    easing: "linear",
-    complete: () => {
-      bokehPass.enabled = false;
-    },
-  });
-  anime({
-    targets: ["#startScreen"],
-    opacity: 0,
-    duration: 500,
-    easing: "linear",
-  });
-  anime({
-    targets: ["#menuScreen"],
-    opacity: 0,
-    duration: 200,
-    easing: "linear",
-  });
-}
+function onLock() {}
 
 var animate = function () {
   requestAnimationFrame(animate);
@@ -279,6 +237,8 @@ function clearTrees() {
     }
   });
   trees.clear();
+
+  //trees.children.forEach((tree) => tree.beginDeletion());
 }
 
 const sizes = {
@@ -301,6 +261,58 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
+window.setState = setState;
+function setState(newState) {
+  if (newState == "playing" && canLock) {
+    controls.lock();
+    state = "playing";
+    lpf.frequency.rampTo(10000, 0.5);
+    anime({
+      targets: bokehPass.uniforms["maxblur"],
+      value: 0,
+      duration: 200,
+      easing: "linear",
+      complete: () => {
+        bokehPass.enabled = false;
+      },
+    });
+    anime({
+      targets: ["#startScreen"],
+      opacity: 0,
+      duration: 500,
+      easing: "linear",
+    });
+    anime({
+      targets: ["#menuScreen"],
+      opacity: 0,
+      duration: 200,
+      easing: "linear",
+    });
+  } else if (newState == "title") {
+    state = "title";
+    canLock = true;
+  } else if (newState == "menu") {
+    canLock = false;
+    window.setTimeout(() => (canLock = true), 1250);
+    state = "menu";
+    bokehPass.enabled = true;
+    anime({
+      targets: bokehPass.uniforms["maxblur"],
+      value: 0.01,
+      duration: 200,
+      easing: "linear",
+    });
+    lpf.frequency.rampTo(menuFilterFreq, 0.5);
+    anime({
+      targets: ["#menuScreen"],
+      opacity: 1,
+      duration: 200,
+      easing: "linear",
+    });
+  }
+  renderUI(state);
+}
+
 window.setScale = setScale;
 function setScale(newScale) {
   scale = scales[newScale];
@@ -308,11 +320,15 @@ function setScale(newScale) {
 
 window.setOsc = setOsc;
 function setOsc(newOsc) {
-  oscType = newOsc;
+  oscType = oscillators[newOsc];
   trees.children.forEach((tree) => {
-    tree.synth.oscillator.type = newOsc;
+    tree.synth.oscillator.type = oscType.key;
   });
 }
 
 init();
 animate();
+
+document.addEventListener("pointerlockerror", (e) => console.log(e), false);
+
+//root.render(UI());

@@ -6,18 +6,18 @@ export const scales = {
   hirajoshi: { notes: [0, 4, 6, 7, 11], name: "Hirajōshi" },
   iwato: { notes: [0, 1, 5, 6, 10], name: "Iwato" },
   wholeTone: { notes: [0, 2, 4, 6, 8, 10], name: "Whole Tone" },
-  evil: { notes: [0, 3, 7, 8, 11], name: "Evil" },
+  //evil: { notes: [0, 3, 7, 8, 11], name: "Evil" },
   acoustic: { notes: [0, 2, 4, 6, 7, 9, 10], name: "Acoustic" },
   prometheus: { notes: [0, 2, 4, 6, 9, 10], name: "Prometheus" },
-  //dom9: [0, 2, 4, 7, 10],
+  dom9: { notes: [0, 2, 4, 7, 10], name: "Dominant 9" },
 };
 
 export const oscillators = {
-  pulse: { name: "Pulse" },
-  sine: { name: "Sine" },
-  sawtooth: { name: "Saw" },
-  triangle: { name: "Triangle" },
-  square: { name: "Square" },
+  pulse: { name: "Pulse", key: "pulse" },
+  sine: { name: "Sine", key: "sine" },
+  sawtooth: { name: "Saw", key: "sawtooth" },
+  triangle: { name: "Triangle", key: "triangle" },
+  square: { name: "Square", key: "square" },
 };
 
 export function lengthToPitch(length, baseFreq, scale) {
