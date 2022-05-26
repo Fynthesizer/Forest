@@ -4,7 +4,6 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./style.css";
 import "./theme.scss";
 import { oscillators, scales } from "./music";
 import { oscType, scale } from "./script.js";
@@ -41,8 +40,8 @@ class TitleScreen extends React.Component {
   render() {
     return (
       <div className="overlay">
-        <h1 id="startTitle">FOREST</h1>
-        <div id="startHelp">click to plant trees</div>
+        <h1 id="startTitle">forest</h1>
+        <div id="startHelp">click to plant trees :)</div>
       </div>
     );
   }
@@ -77,7 +76,7 @@ class SettingsMenu extends React.Component {
   render() {
     return (
       <div className="overlay" id="menuScreen">
-        <h2>FOREST</h2>
+        <h2>forest</h2>
         <ScaleSelector />
         <OscSelector />
         <div id="actionButtons">

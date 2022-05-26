@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Megrim&family=Nunito:wght@300&family=Zen+Loop&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200&family=Megrim&family=Nunito:wght@200&family=Raleway:ital,wght@0,100;1,200&family=Syne&family=Zen+Loop&display=swap");
 
 $border-radius: 2px;
 //$border-width: 1px;
@@ -17,7 +17,22 @@ $link-decoration: none !important;
 html,
 body {
   height: 100vh;
-  font-family: "Poppins";
+  font-family: "Nunito", sans-serif !important;
+}
+
+h1,
+h2 {
+  font-family: "Josefin Sans", sans-serif;
+}
+
+h1 {
+  font-size: 5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+h2 {
+  font-size: 3rem !important;
+  margin-bottom: 2rem !important;
 }
 
 .btn {
@@ -82,7 +97,6 @@ $theme-colors: (
   height: 100%;
   text-align: center;
   color: white;
-  font-family: "Nunito", sans-serif;
   font-size: 1em;
   cursor: default;
   user-select: none;
@@ -92,35 +106,17 @@ $theme-colors: (
   flex-direction: column;
 }
 
-h1,
-h2 {
-  font-family: "Megrim", cursive;
-}
-
-h1 {
-  font-size: 5rem !important;
-  margin-bottom: 1rem !important;
-}
-
-h2 {
-  font-size: 3rem !important;
-  margin-bottom: 2rem !important;
-}
-
 #startHelp {
   font-size: 1.5rem;
 }
 
 #menuScreen {
   background-color: rgba(0, 0, 0, 0.25);
+  font-family: "Nunito";
 }
 
 #errorScreen {
   background-color: rgba(0, 0, 0, 1);
-}
-
-#settings {
-  width: 30rem;
 }
 
 button {

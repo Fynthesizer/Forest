@@ -1,4 +1,3 @@
-import "./style.css";
 import { Tree } from "./tree.js";
 import { oscillators, scales } from "./music.js";
 import "./ui";
