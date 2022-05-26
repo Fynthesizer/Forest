@@ -1,4 +1,4 @@
-$border-radius: 0.1rem;
+$border-radius: 2px;
 //$border-width: 1px;
 //$input-border-color: red;
 $btn-focus-box-shadow: none !important;
@@ -7,16 +7,28 @@ $dropdown-bg: rgb(50, 50, 50);
 $dropdown-link-hover-bg: rgb(39, 39, 39);
 $dropdown-link-color: white;
 $dropdown-link-hover-color: white;
+$dropdown-link-active-color: rgb(50, 50, 50);
+$dropdown-link-active-bg: white;
+$spinner-height: 5rem;
+$spinner-width: 5rem;
+$link-decoration: none !important;
 
 .btn {
   outline: solid rgb(129, 129, 129) 1px !important;
   margin-right: 0.5rem;
   margin-left: 0.5rem;
   min-width: 6rem;
+  height: 2.5rem;
+  text-decoration: none !important;
 }
 
 #actionButtons {
   margin-top: 1rem;
+}
+
+.dropdown {
+  margin-bottom: 1rem;
+  height: 2.5rem;
 }
 
 .dropdown-menu {
@@ -29,15 +41,16 @@ $dropdown-link-hover-color: white;
   text-align: right;
   padding-right: 0.5rem;
   font-weight: 400;
+  height: 2.5rem;
 }
 
 .dropdown-toggle {
-  margin-bottom: 0.5rem;
   width: 10rem;
 }
 
 $theme-colors: (
   primary: rgba(80, 80, 80, 0.25),
+  secondary: rgba(80, 80, 80, 0.25),
 );
 
 @import "bootstrap/scss/bootstrap";

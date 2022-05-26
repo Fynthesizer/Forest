@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Megrim&family=Nunito:wght@500&family=Zen+Loop&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Megrim&family=Nunito:wght@300&family=Zen+Loop&display=swap");
 * {
   margin: 0;
   padding: 0;
@@ -45,7 +45,6 @@ body {
 #startTitle {
   font-size: 6em;
   margin-bottom: 0.2em;
-  letter-spacing: 0.2em;
   font-family: "Megrim", cursive;
 }
 

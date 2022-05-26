@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import Dropdown from "react-bootstrap/Dropdown";
 import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style.css";
 import "./theme.scss";
@@ -69,7 +70,7 @@ class LoadingScreen extends React.Component {
   render() {
     return (
       <div className="overlay">
-        <p>the thing is loading</p>
+        <Spinner animation="border" />
       </div>
     );
   }

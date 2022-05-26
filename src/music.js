@@ -10,6 +10,7 @@ export const scales = {
   acoustic: { notes: [0, 2, 4, 6, 7, 9, 10], name: "Acoustic" },
   prometheus: { notes: [0, 2, 4, 6, 9, 10], name: "Prometheus" },
   dom9: { notes: [0, 2, 4, 7, 10], name: "Dominant 9" },
+  pretty: { notes: [0, 2, 4, 7, 9, 11], name: "Pretty" }, //Diatonic major scale without the fourth
 };
 
 export const oscillators = {
