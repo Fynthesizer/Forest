@@ -1,6 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Megrim&family=Nunito:wght@300&family=Zen+Loop&display=swap");
+
 $border-radius: 2px;
 //$border-width: 1px;
-//$input-border-color: red;
 $btn-focus-box-shadow: none !important;
 $btn-active-box-shadow: none !important;
 $dropdown-bg: rgb(50, 50, 50);
@@ -12,6 +13,12 @@ $dropdown-link-active-bg: white;
 $spinner-height: 5rem;
 $spinner-width: 5rem;
 $link-decoration: none !important;
+
+html,
+body {
+  height: 100vh;
+  font-family: "Poppins";
+}
 
 .btn {
   outline: solid rgb(129, 129, 129) 1px !important;
@@ -52,5 +59,84 @@ $theme-colors: (
   primary: rgba(80, 80, 80, 0.25),
   secondary: rgba(80, 80, 80, 0.25),
 );
+
+.webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  outline: none;
+}
+
+#menu {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  color: white;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: white;
+  font-family: "Nunito", sans-serif;
+  font-size: 1em;
+  cursor: default;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+h1,
+h2 {
+  font-family: "Megrim", cursive;
+}
+
+h1 {
+  font-size: 5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+h2 {
+  font-size: 3rem !important;
+  margin-bottom: 2rem !important;
+}
+
+#startHelp {
+  font-size: 1.5rem;
+}
+
+#menuScreen {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+#errorScreen {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+#settings {
+  width: 30rem;
+}
+
+button {
+  border: none;
+  background-color: black;
+  color: white;
+  height: 2em;
+  padding: 0.2em;
+  margin: 0.2em;
+  transition: 0.1s;
+}
+
+button:hover {
+  border: none;
+  background-color: white;
+  color: black;
+}
 
 @import "bootstrap/scss/bootstrap";

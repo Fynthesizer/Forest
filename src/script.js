@@ -15,7 +15,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { renderUI } from "./ui";
 
 const maxTrees = 10;
-const lightColour = new THREE.Color("#badefc");
+const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.8;
 const reverbSettings = { decay: 15, wet: 0.6 };
 
@@ -30,8 +30,13 @@ export let listener;
 let reverb, lpf;
 
 let loaded = false;
-export let state = "loading"; //possible states: loading, title, playing, menu
+let state = "loading"; //possible states: loading, title, playing, menu
 let canLock = false;
+
+//Check if browser is compatible
+let browser = browserDetect();
+let browserCompatible = browser != "firefox" ? true : false;
+if (!browserCompatible) setState("error");
 
 export let scale = scales.diatonic;
 export let oscType = oscillators.pulse;
@@ -78,7 +83,7 @@ function init() {
   //Controls
   controls = new PointerLockControls(camera, renderer.domElement);
   controls.addEventListener("unlock", onUnlock);
-  controls.addEventListener("lock", onLock);
+  //controls.addEventListener("lock", onLock);
 
   //Effects
   scene.fog = new THREE.Fog("#25386b", 0.25, 900);
@@ -112,8 +117,8 @@ function init() {
 
   //Sound
   listener = new THREE.AudioListener();
-  camera.add(listener);
   Tone.setContext(listener.context);
+  camera.add(listener);
   reverb = new Tone.Reverb();
   reverb.set(reverbSettings);
   lpf = new Tone.Filter(10000, "lowpass");
@@ -160,8 +165,25 @@ function init() {
   scene.add(trees);
 }
 
-window.addEventListener("pointerdown", onClick);
-window.addEventListener("pointermove", onPointerMove);
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+function onResize() {
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  composer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
 
 function onPointerMove(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -181,8 +203,6 @@ function onClick(event) {
 function onUnlock() {
   setState("menu");
 }
-
-function onLock() {}
 
 var animate = function () {
   requestAnimationFrame(animate);
@@ -241,26 +261,6 @@ function clearTrees() {
   //trees.children.forEach((tree) => tree.beginDeletion());
 }
 
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  composer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
-
 window.setState = setState;
 function setState(newState) {
   if (newState == "playing" && canLock) {
@@ -309,6 +309,8 @@ function setState(newState) {
       duration: 200,
       easing: "linear",
     });
+  } else if (newState == "error") {
+    state = "error";
   }
   renderUI(state);
 }
@@ -326,9 +328,32 @@ function setOsc(newOsc) {
   });
 }
 
-init();
-animate();
-
-document.addEventListener("pointerlockerror", (e) => console.log(e), false);
+if (browserCompatible) {
+  init();
+  animate();
+  window.addEventListener("resize", onResize);
+  window.addEventListener("pointerdown", onClick);
+  window.addEventListener("pointermove", onPointerMove);
+}
 
 //root.render(UI());
+function browserDetect() {
+  let userAgent = navigator.userAgent;
+  let browserName;
+
+  if (userAgent.match(/chrome|chromium|crios/i)) {
+    browserName = "chrome";
+  } else if (userAgent.match(/firefox|fxios/i)) {
+    browserName = "firefox";
+  } else if (userAgent.match(/safari/i)) {
+    browserName = "safari";
+  } else if (userAgent.match(/opr\//i)) {
+    browserName = "opera";
+  } else if (userAgent.match(/edg/i)) {
+    browserName = "edge";
+  } else {
+    browserName = "No browser detection";
+  }
+
+  return browserName;
+}

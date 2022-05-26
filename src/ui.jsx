@@ -19,6 +19,7 @@ export function renderUI(state) {
 function UI(state) {
   return (
     <div>
+      {state === "error" ? <ErrorScreen /> : null}
       {state === "menu" ? <SettingsMenu /> : null}
       {state === "title" ? <TitleScreen /> : null}
       {state === "loading" ? <LoadingScreen /> : null}
@@ -26,40 +27,21 @@ function UI(state) {
   );
 }
 
-/*
-export class UI extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { state: state };
-  }
-
-  componentDidMount() {
-    this.setState({ state: state });
-    console.log("mount");
-  }
-  componentDidUpdate() {
-    console.log("update");
-    console.log(state);
-  }
-
+class ErrorScreen extends React.Component {
   render() {
-    //if (this.state.state != state) this.setState({ state: state });
     return (
-      <div>
-        {state === "menu" ? <SettingsMenu /> : null}
-        {state === "title" ? <TitleScreen /> : null}
-        {state === "loading" ? <LoadingScreen /> : null}
+      <div className="overlay" id="errorScreen">
+        <div id="startHelp">sorry, your browser's no good :(</div>
       </div>
     );
   }
 }
-*/
 
 class TitleScreen extends React.Component {
   render() {
     return (
       <div className="overlay">
-        <div id="startTitle">Forest</div>
+        <h1 id="startTitle">FOREST</h1>
         <div id="startHelp">click to plant trees</div>
       </div>
     );
@@ -95,6 +77,7 @@ class SettingsMenu extends React.Component {
   render() {
     return (
       <div className="overlay" id="menuScreen">
+        <h2>FOREST</h2>
         <ScaleSelector />
         <OscSelector />
         <div id="actionButtons">

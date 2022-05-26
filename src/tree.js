@@ -13,8 +13,8 @@ const NodeType = {
 
 const maxHeight = 6;
 const maxBranches = 3;
-const branchGrowthRate = 0.02;
-const trunkGrowthRate = 0.04;
+const branchGrowthRate = 0.03;
+const trunkGrowthRate = 0.06;
 const twistFactor = Math.PI * 1.33;
 const twistVariation = Math.PI / 4;
 
@@ -22,7 +22,7 @@ const windSpeed = 0.0005;
 const windAmount = 0.01;
 
 const arpRate = 200;
-const arpPeriod = 3200;
+const arpPeriod = 5000;
 const baseFreq = 400;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
