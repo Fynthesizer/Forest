@@ -30,7 +30,10 @@ class ErrorScreen extends React.Component {
   render() {
     return (
       <div className="overlay" id="errorScreen">
-        <div id="startHelp">sorry, your browser's no good :(</div>
+        <div id="startHelp">
+          sorry, your browser's no good :( <br />
+          <br /> try with Chrome or Edge
+        </div>
       </div>
     );
   }
@@ -50,7 +53,7 @@ class TitleScreen extends React.Component {
 class LoadingScreen extends React.Component {
   render() {
     return (
-      <div className="overlay">
+      <div className="overlay" id="loadScreen">
         <Spinner animation="border" />
       </div>
     );

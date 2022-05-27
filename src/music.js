@@ -38,6 +38,7 @@ export function lengthToPitch(length, baseFreq, scale) {
   return note;
 }
 
+//Quantize note to nearest note in scale
 export function quantizeNote(note, scale) {
   let degree = note % 12;
   let octave = Math.floor(note / 12) * 12;

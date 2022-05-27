@@ -3,7 +3,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "webpack --config ./bundler/webpack.prod.js",
-    "dev": "webpack serve --config ./bundler/webpack.dev.js"
+    "dev": "webpack serve --config ./bundler/webpack.dev.js",
+    "deploy": "gh-pages -d ./dist"
   },
   "dependencies": {
     "@babel/preset-env": "^7.13.5",
@@ -35,6 +36,7 @@
     "@babel/preset-react": "^7.17.12",
     "babel-cli": "^6.26.0",
     "babel-loader": "^8.2.5",
+    "gh-pages": "^4.0.0",
     "sass": "^1.52.1",
     "sass-loader": "^13.0.0",
     "webpack": "^5.72.1"

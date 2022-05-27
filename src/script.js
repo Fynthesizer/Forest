@@ -21,7 +21,7 @@ const reverbSettings = { decay: 15, wet: 0.6 };
 let scene, camera, renderer;
 let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
-let terrain, field, cursor;
+let terrain, field, moon, cursor;
 let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
@@ -34,7 +34,7 @@ let canLock = false;
 
 //Check if browser is compatible
 let browser = browserDetect();
-let browserCompatible = browser != "firefox" ? true : false;
+let browserCompatible = browser != "safari" && browser != "firefox";
 if (!browserCompatible) setState("error");
 
 export let scale = scales.diatonic;
@@ -153,6 +153,13 @@ function init() {
   ]);
   scene.background = skyboxTexture;
 
+  //Moon
+  const moonGeo = new THREE.SphereGeometry(0.5, 8, 4);
+  const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  moon = new THREE.Mesh(moonGeo, moonMat);
+  moon.position.set(0, 15, 0);
+  scene.add(moon);
+
   //Lights
   ambientLight = new THREE.AmbientLight(lightColour, 0.1);
   directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
@@ -227,12 +234,12 @@ function updateCursor() {
 }
 
 function canPlantTree() {
-  if (intersection == null) return false;
+  if (intersection == null) return false; // Cursor not on terrain
   let distance = new THREE.Vector3()
     .copy(camera.position)
     .distanceTo(intersection.point);
-  if (distance < 4) return false;
-  if (trees.children.length >= maxTrees) return false;
+  if (distance < 4) return false; // Too close to player
+  if (trees.children.length >= maxTrees) return false; // Too many trees
   if (state == "playing") return true;
 }
 
