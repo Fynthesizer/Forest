@@ -21,10 +21,10 @@ const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.75;
 const reverbSettings = { decay: 15, wet: 0.6 };
 
-let scene, camera, renderer, controller;
-let composer, renderPass, bloomPass, smaaPass, bokehPass;
+let scene, scene2, camera, renderer, controller;
+let composer, renderPass, skyPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
-let terrain, field, mountains, cursor;
+let terrain, field, mountains, moon, cursor;
 let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
@@ -68,6 +68,7 @@ THREE.DefaultLoadingManager.onLoad = function () {
 function init() {
   //Basics
   scene = new THREE.Scene();
+  scene2 = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -93,6 +94,11 @@ function init() {
   scene.fog = new THREE.Fog("#25386b", 0.25, 900);
   composer = new EffectComposer(renderer);
   renderPass = new RenderPass(scene, camera);
+  renderPass.clear = false;
+  renderPass.clearDepth = true;
+  skyPass = new RenderPass(scene2, camera);
+  skyPass.clear = false;
+  skyPass.clearDepth = true;
   bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     0.5,
@@ -108,8 +114,9 @@ function init() {
     aperture: 0.025,
     maxblur: 0.0,
   });
-
+  composer.addPass(skyPass);
   composer.addPass(renderPass);
+
   composer.addPass(bloomPass);
   composer.addPass(smaaPass);
   composer.addPass(bokehPass);
@@ -139,8 +146,22 @@ function init() {
     scene.add(terrain);
     field = terrain.children[0];
     mountains = terrain.children[1];
-    if (isMobile) terrain.remove(mountains);
+    //if (isMobile) terrain.remove(mountains);
   });
+
+  //Moon
+  const moonGeo = new THREE.SphereGeometry(15, 16, 8);
+  const moonMat = new THREE.MeshPhongMaterial({
+    color: "#e5e5e5",
+    emissive: "#e5e6d6",
+    emissiveIntensity: 0.45,
+    fog: false,
+    flatShading: true,
+    shininess: 0,
+  });
+  moon = new THREE.Mesh(moonGeo, moonMat);
+  moon.position.set(0, 70, -50);
+  scene2.add(moon);
 
   //Cursor
   const cursorGeo = new THREE.SphereGeometry(0.05, 16, 8);
@@ -158,12 +179,11 @@ function init() {
     "./front.jpg",
     "./back.jpg",
   ]);
-  scene.background = skyboxTexture;
+  scene2.background = skyboxTexture;
 
   //Lights
   ambientLight = new THREE.AmbientLight(lightColour, 0.1);
   directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
-  directionalLight.rotation.set(1.3, 0, 2.5);
   scene.add(ambientLight);
   scene.add(directionalLight);
 
@@ -181,6 +201,7 @@ function init() {
       });
     });
   }
+
   //Desktop
   else {
     renderer.setAnimationLoop(function () {
