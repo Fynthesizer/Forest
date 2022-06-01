@@ -110,6 +110,15 @@ $theme-colors: (
   flex-direction: column;
 }
 
+#settingsIcon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
 #startHelp {
   font-size: 1.5rem;
 }

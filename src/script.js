@@ -21,7 +21,7 @@ const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.8;
 const reverbSettings = { decay: 15, wet: 0.6 };
 
-let scene, camera, renderer, controller;
+let scene, camera, renderer, controller, canvas;
 let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
 let terrain, field, mountains, moon, cursor;
@@ -142,7 +142,6 @@ function init() {
     field = terrain.children[0];
     mountains = terrain.children[1];
     if (isMobile) terrain.remove(mountains);
-    console.log(terrain);
   });
 
   //Cursor
@@ -205,6 +204,8 @@ function init() {
   //Listeners
   window.addEventListener("resize", onResize);
   window.addEventListener("pointerdown", onClick);
+  console.log(renderer.domElement);
+  renderer.domElement.onpointerdown = () => console.log("clicked");
   window.addEventListener("pointermove", onPointerMove);
   controller = renderer.xr.getController(0);
   controller.addEventListener("selectstart", onClick);
@@ -240,18 +241,22 @@ function onPointerMove(event) {
 }
 
 function onClick(event) {
+  let clickedOnCanvas = event.path[0] === renderer.domElement;
+  console.log(event);
   if (state == "title" && canLock) setState("playing");
   else if (state == "playing") {
-    if ((event.button == 0 || event.type == "selectstart") && canPlantTree()) {
-      const tree = new Tree(intersection.point);
-      trees.add(tree);
-    }
+    if (event.button == 0 && clickedOnCanvas && canPlantTree())
+      plantTree(intersection.point);
   }
+}
+
+function plantTree(point) {
+  const tree = new Tree(point);
+  trees.add(tree);
 }
 
 function onXRConnected(event) {
   setState("playing");
-  console.log(renderer.xr.getSession());
 }
 
 function onUnlock() {
@@ -346,8 +351,10 @@ function setState(newState) {
     state = "title";
     canLock = true;
   } else if (newState == "menu") {
-    canLock = false;
-    window.setTimeout(() => (canLock = true), 1250);
+    if (!isMobile) {
+      canLock = false;
+      window.setTimeout(() => (canLock = true), 1250);
+    }
     state = "menu";
     bokehPass.enabled = true;
     anime({
@@ -366,7 +373,7 @@ function setState(newState) {
   } else if (newState == "error") {
     state = "error";
   }
-  renderUI(state);
+  renderUI(state, isMobile);
 }
 
 window.setScale = setScale;

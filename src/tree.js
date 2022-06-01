@@ -141,12 +141,6 @@ export class Tree extends THREE.Object3D {
     this.growing = false;
   }
 
-  message(message) {
-    if (message == "stopGrowth") {
-      this.growing = false;
-    }
-  }
-
   updateLines() {
     let vertices = new Float32Array(this.nodes.length * 6);
     let index = 0;

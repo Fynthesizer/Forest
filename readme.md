@@ -11,7 +11,7 @@
 - Optimization ✔️
   - Mesh instancing of nodes? ✔️
 - VR Support?
-- Mobile Controls
+- Mobile Controls ✔️
 - Options menu ✔️
   - Scale selection ✔️
   - Timbre selection ✔️
