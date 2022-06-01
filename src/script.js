@@ -18,20 +18,19 @@ import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOri
 
 const maxTrees = 10;
 const lightColour = new THREE.Color("#cfdae4");
-const lightIntensity = 0.8;
+const lightIntensity = 0.75;
 const reverbSettings = { decay: 15, wet: 0.6 };
 
-let scene, camera, renderer, controller, canvas;
+let scene, camera, renderer, controller;
 let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
-let terrain, field, mountains, moon, cursor;
+let terrain, field, mountains, cursor;
 let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
 export let listener;
 let reverb, lpf;
 
-let loaded = false;
 let state = "loading"; //possible states: loading, title, playing, menu
 let canLock = false;
 
@@ -64,7 +63,6 @@ THREE.DefaultLoadingManager.onProgress = function (
 THREE.DefaultLoadingManager.onLoad = function () {
   console.log("Loading Complete!");
   setState("title");
-  loaded = true;
 };
 
 function init() {
@@ -97,9 +95,9 @@ function init() {
   renderPass = new RenderPass(scene, camera);
   bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    1,
+    0.5,
     0.2,
-    0.5
+    0.3
   );
   smaaPass = new SMAAPass(
     window.innerWidth * renderer.getPixelRatio(),
@@ -162,17 +160,10 @@ function init() {
   ]);
   scene.background = skyboxTexture;
 
-  //Moon
-  const moonGeo = new THREE.SphereGeometry(0.5, 8, 4);
-  const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  moon = new THREE.Mesh(moonGeo, moonMat);
-  moon.position.set(0, 15, 0);
-  scene.add(moon);
-
   //Lights
   ambientLight = new THREE.AmbientLight(lightColour, 0.1);
   directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
-  directionalLight.rotation.set(-Math.PI, 0, -Math.PI);
+  directionalLight.rotation.set(1.3, 0, 2.5);
   scene.add(ambientLight);
   scene.add(directionalLight);
 
@@ -204,8 +195,6 @@ function init() {
   //Listeners
   window.addEventListener("resize", onResize);
   window.addEventListener("pointerdown", onClick);
-  console.log(renderer.domElement);
-  renderer.domElement.onpointerdown = () => console.log("clicked");
   window.addEventListener("pointermove", onPointerMove);
   controller = renderer.xr.getController(0);
   controller.addEventListener("selectstart", onClick);
@@ -242,7 +231,6 @@ function onPointerMove(event) {
 
 function onClick(event) {
   let clickedOnCanvas = event.path[0] === renderer.domElement;
-  console.log(event);
   if (state == "title" && canLock) setState("playing");
   else if (state == "playing") {
     if (event.button == 0 && clickedOnCanvas && canPlantTree())
@@ -262,17 +250,6 @@ function onXRConnected(event) {
 function onUnlock() {
   setState("menu");
 }
-
-var animate = function () {
-  //requestAnimationFrame(animate);
-  if (loaded) composer.render();
-  //renderer.render(scene, camera);
-  if (terrain != null) updateCursor();
-
-  trees.children.forEach((tree) => {
-    tree.update();
-  });
-};
 
 function updateCursor() {
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -391,10 +368,8 @@ function setOsc(newOsc) {
 
 if (browserCompatible) {
   init();
-  //animate();
 }
 
-//root.render(UI());
 function browserDetect() {
   let userAgent = navigator.userAgent;
   let browserName;

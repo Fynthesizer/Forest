@@ -36,7 +36,6 @@ class SettingsIcon extends React.Component {
   }
 
   handleClick() {
-    console.log("clicked");
     window.setState("menu");
   }
 

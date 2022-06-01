@@ -24,5 +24,6 @@
 - Clearing trees only destroys the rendered object ✔️
 - Doesn't seem to run on Firefox 😢
 - Button text moves when you hover over it for some reason ✔️
+- UI gets a bit wacky when resizing on mobile
 
 Skybox courtesy of this sick skybox generator: https://github.com/wwwtyro/space-3d
