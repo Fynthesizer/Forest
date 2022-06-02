@@ -104,7 +104,7 @@ function init() {
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     0.5,
     0.2,
-    0.3
+    0.5
   );
   smaaPass = new SMAAPass(
     window.innerWidth * renderer.getPixelRatio(),
@@ -154,7 +154,7 @@ function init() {
   const moonMat = new THREE.MeshPhongMaterial({
     color: "#e5e5e5",
     emissive: moonColour,
-    emissiveIntensity: 0.45,
+    emissiveIntensity: 0.6,
     fog: false,
     flatShading: true,
     shininess: 0,
@@ -309,6 +309,7 @@ function clearTrees() {
     tree.lineGeo.dispose(); //Dispose of line geometry
     tree.lineMat.dispose(); //Dispose of line material
     clearInterval(tree.timer); //Stop timer
+    clearTimeout(tree.initialTimer);
     for (const key in tree) {
       delete tree[key]; //Delete all properties
     }

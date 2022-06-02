@@ -29,6 +29,7 @@ const windAmount = 0.01;
 
 const arpRate = 200;
 const arpPeriod = 5000;
+const offsetMultiplier = 250;
 const baseFreq = 400;
 
 const nodeGeo = new THREE.SphereGeometry(1, 4, 2);
@@ -93,10 +94,8 @@ export class Tree extends THREE.Object3D {
 
     //Timer
     this.timer;
-    //let timeOffset =
-    //  (this.position.distanceTo(listener.position) * 200) % arpPeriod;
     let timeOffset = calculateTimeOffset(this.position);
-    setTimeout(
+    this.initialTimer = setTimeout(
       this.startTimer.bind(this),
       arpPeriod - (performance.now() % arpPeriod) + timeOffset
     );
@@ -107,16 +106,6 @@ export class Tree extends THREE.Object3D {
     this.updateNodes();
     this.updateLight();
     if (this.growing) this.grow();
-  }
-
-  beginDeletion() {
-    //Doesn't work yet
-    anime({
-      targets: this.nodes,
-      currentLength: 0,
-      duration: 200,
-      easing: "linear",
-    });
   }
 
   grow() {
@@ -455,8 +444,13 @@ function generateColours(length) {
 
 function calculateTimeOffset(position) {
   let direction = new THREE.Vector3().copy(position).normalize();
-  let angleOffset =
-    Math.abs(new THREE.Vector3(0, 0, 1).angleTo(direction) - Math.PI) * 500;
-  let distanceOffset = position.distanceTo(listener.position) * 250;
-  return (angleOffset + distanceOffset) % arpPeriod;
+  let distance = position.distanceTo(listener.position);
+  let angle = new THREE.Vector3(0, 0, 1).angleTo(direction);
+  console.log("angle: " + angle);
+  let arcLength = distance * Math.abs(angle);
+  console.log("distance: " + distance);
+  console.log("arc length: " + arcLength);
+  let timeOffset = ((arcLength + distance) * offsetMultiplier) % arpPeriod;
+  console.log("time offset: " + timeOffset);
+  return timeOffset;
 }
