@@ -19,13 +19,14 @@ import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOri
 const maxTrees = 10;
 const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.75;
+const moonColour = new THREE.Color("#e0dfcc");
 const reverbSettings = { decay: 15, wet: 0.6 };
 
 let scene, scene2, camera, renderer, controller;
 let composer, renderPass, skyPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
 let terrain, field, mountains, moon, cursor;
-let modelLoader, skyboxLoader;
+let modelLoader, skyboxLoader, textureLoader;
 let ambientLight, directionalLight;
 let trees;
 export let listener;
@@ -116,7 +117,6 @@ function init() {
   });
   composer.addPass(skyPass);
   composer.addPass(renderPass);
-
   composer.addPass(bloomPass);
   composer.addPass(smaaPass);
   composer.addPass(bokehPass);
@@ -153,14 +153,14 @@ function init() {
   const moonGeo = new THREE.SphereGeometry(15, 16, 8);
   const moonMat = new THREE.MeshPhongMaterial({
     color: "#e5e5e5",
-    emissive: "#e5e6d6",
+    emissive: moonColour,
     emissiveIntensity: 0.45,
     fog: false,
     flatShading: true,
     shininess: 0,
   });
   moon = new THREE.Mesh(moonGeo, moonMat);
-  moon.position.set(0, 70, -50);
+  moon.position.set(0, 60, -50);
   scene2.add(moon);
 
   //Cursor

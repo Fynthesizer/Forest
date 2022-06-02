@@ -3,12 +3,18 @@ import * as Tone from "tone";
 import { listener, scale, oscType } from "./script.js";
 import { scales, lengthToPitch } from "./music.js";
 import anime from "animejs/lib/anime.es";
+import dist from "webpack-merge";
 
 const NodeType = {
   Root: 0,
   Trunk: 1,
   Branch: 2,
   Leaf: 3, //Ends of the tree, do not generate further children
+};
+
+const baseHeightRange = {
+  min: 2,
+  max: 4,
 };
 
 const maxHeight = 6;
@@ -39,7 +45,10 @@ export class Tree extends THREE.Object3D {
 
     this.growing = true;
 
-    this.baseHeight = THREE.MathUtils.randFloat(2, 4);
+    this.baseHeight = THREE.MathUtils.randFloat(
+      baseHeightRange.min,
+      baseHeightRange.max
+    );
     this.colours = generateColours(this.baseHeight);
 
     //Lines
@@ -81,7 +90,16 @@ export class Tree extends THREE.Object3D {
     this.synth.oscillator.type = oscType.key;
     this.voice.setNodeSource(this.synth.output);
     this.add(this.voice);
+
+    //Timer
     this.timer;
+    //let timeOffset =
+    //  (this.position.distanceTo(listener.position) * 200) % arpPeriod;
+    let timeOffset = calculateTimeOffset(this.position);
+    setTimeout(
+      this.startTimer.bind(this),
+      arpPeriod - (performance.now() % arpPeriod) + timeOffset
+    );
   }
 
   update() {
@@ -106,10 +124,13 @@ export class Tree extends THREE.Object3D {
     else this.growthFinished();
   }
 
-  growthFinished() {
-    this.growing = false;
+  startTimer() {
     this.startArpeggio();
     this.timer = setInterval(this.startArpeggio.bind(this), arpPeriod);
+  }
+
+  growthFinished() {
+    this.growing = false;
   }
 
   updateLight() {
@@ -423,11 +444,19 @@ function rotateDirection(direction, axisAngle, amount, variation) {
 }
 
 function generateColours(length) {
-  let hue = THREE.MathUtils.mapLinear(length, 2, 4, 360, 0); //Map length to hue
+  let hue = THREE.MathUtils.mapLinear(length % 2, 0, 2, 360, 0); //Map length to hue
   let colours = {
     nodeColour: new THREE.Color(`hsl(${hue}, 90%, 66%)`),
     lineColour: new THREE.Color(`hsl(${hue}, 90%, 90%)`),
     lightColour: new THREE.Color(`hsl(${hue}, 90%, 50%)`),
   };
   return colours;
+}
+
+function calculateTimeOffset(position) {
+  let direction = new THREE.Vector3().copy(position).normalize();
+  let angleOffset =
+    Math.abs(new THREE.Vector3(0, 0, 1).angleTo(direction) - Math.PI) * 500;
+  let distanceOffset = position.distanceTo(listener.position) * 250;
+  return (angleOffset + distanceOffset) % arpPeriod;
 }
