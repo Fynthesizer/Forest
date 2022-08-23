@@ -19,14 +19,13 @@ import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOri
 const maxTrees = 10;
 const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.75;
-const moonColour = new THREE.Color("#e0dfcc");
 const reverbSettings = { decay: 15, wet: 0.6 };
 
-let scene, scene2, camera, renderer, controller;
-let composer, renderPass, skyPass, bloomPass, smaaPass, bokehPass;
+let scene, camera, renderer, controller;
+let composer, renderPass, bloomPass, smaaPass, bokehPass;
 let raycaster, pointer, intersection, controls;
-let terrain, field, mountains, moon, cursor;
-let modelLoader, skyboxLoader, textureLoader;
+let terrain, field, mountains, cursor;
+let modelLoader, skyboxLoader;
 let ambientLight, directionalLight;
 let trees;
 export let listener;
@@ -41,8 +40,8 @@ let browserCompatible = browser != "safari" && browser != "firefox";
 if (!browserCompatible) setState("error");
 let isMobile = mobileCheck();
 
-export let scale = scales.diatonic;
-export let oscType = oscillators.pulse;
+export let scale = scales[0];
+export let oscType = oscillators[0];
 let menuFilterFreq = 800;
 
 THREE.DefaultLoadingManager.onProgress = function (
@@ -69,7 +68,6 @@ THREE.DefaultLoadingManager.onLoad = function () {
 function init() {
   //Basics
   scene = new THREE.Scene();
-  scene2 = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -95,16 +93,11 @@ function init() {
   scene.fog = new THREE.Fog("#25386b", 0.25, 900);
   composer = new EffectComposer(renderer);
   renderPass = new RenderPass(scene, camera);
-  renderPass.clear = false;
-  renderPass.clearDepth = true;
-  skyPass = new RenderPass(scene2, camera);
-  skyPass.clear = false;
-  skyPass.clearDepth = true;
   bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     0.5,
     0.2,
-    0.5
+    0.3
   );
   smaaPass = new SMAAPass(
     window.innerWidth * renderer.getPixelRatio(),
@@ -115,7 +108,7 @@ function init() {
     aperture: 0.025,
     maxblur: 0.0,
   });
-  composer.addPass(skyPass);
+
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
   composer.addPass(smaaPass);
@@ -149,20 +142,6 @@ function init() {
     //if (isMobile) terrain.remove(mountains);
   });
 
-  //Moon
-  const moonGeo = new THREE.SphereGeometry(15, 16, 8);
-  const moonMat = new THREE.MeshPhongMaterial({
-    color: "#e5e5e5",
-    emissive: moonColour,
-    emissiveIntensity: 0.6,
-    fog: false,
-    flatShading: true,
-    shininess: 0,
-  });
-  moon = new THREE.Mesh(moonGeo, moonMat);
-  moon.position.set(0, 60, -50);
-  scene2.add(moon);
-
   //Cursor
   const cursorGeo = new THREE.SphereGeometry(0.05, 16, 8);
   const cursorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -179,11 +158,12 @@ function init() {
     "./front.jpg",
     "./back.jpg",
   ]);
-  scene2.background = skyboxTexture;
+  scene.background = skyboxTexture;
 
   //Lights
   ambientLight = new THREE.AmbientLight(lightColour, 0.1);
   directionalLight = new THREE.DirectionalLight(lightColour, lightIntensity);
+  directionalLight.rotation.set(1.3, 0, 2.5);
   scene.add(ambientLight);
   scene.add(directionalLight);
 
@@ -201,7 +181,6 @@ function init() {
       });
     });
   }
-
   //Desktop
   else {
     renderer.setAnimationLoop(function () {
@@ -217,6 +196,7 @@ function init() {
   window.addEventListener("resize", onResize);
   window.addEventListener("pointerdown", onClick);
   window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("keydown", onKeyPress);
   controller = renderer.xr.getController(0);
   controller.addEventListener("selectstart", onClick);
   controller.addEventListener("connected", onXRConnected);
@@ -256,6 +236,23 @@ function onClick(event) {
   else if (state == "playing") {
     if (event.button == 0 && clickedOnCanvas && canPlantTree())
       plantTree(intersection.point);
+  }
+}
+
+function onKeyPress(event) {
+  switch (event.key) {
+    case "ArrowUp":
+      cycleScale(1);
+      break;
+    case "ArrowDown":
+      cycleScale(-1);
+      break;
+    case "ArrowRight":
+      cycleOsc(1);
+      break;
+    case "ArrowLeft":
+      cycleOsc(-1);
+      break;
   }
 }
 
@@ -309,7 +306,6 @@ function clearTrees() {
     tree.lineGeo.dispose(); //Dispose of line geometry
     tree.lineMat.dispose(); //Dispose of line material
     clearInterval(tree.timer); //Stop timer
-    clearTimeout(tree.initialTimer);
     for (const key in tree) {
       delete tree[key]; //Delete all properties
     }
@@ -377,12 +373,31 @@ function setState(newState) {
 
 window.setScale = setScale;
 function setScale(newScale) {
-  scale = scales[newScale];
+  scale = scales.find((item) => item.name == newScale);
 }
 
 window.setOsc = setOsc;
 function setOsc(newOsc) {
-  oscType = oscillators[newOsc];
+  oscType = oscillators.find((item) => item.name == newOsc);
+  trees.children.forEach((tree) => {
+    tree.synth.oscillator.type = oscType.key;
+  });
+}
+
+function cycleScale(direction) {
+  let index = scales.findIndex((item) => item === scale);
+  let newIndex = index + direction;
+  if (newIndex >= scales.length) newIndex = 0;
+  else if (newIndex < 0) newIndex = scales.length - 1;
+  scale = scales[newIndex];
+}
+
+function cycleOsc(direction) {
+  let index = oscillators.findIndex((item) => item === oscType);
+  let newIndex = index + direction;
+  if (newIndex >= oscillators.length) newIndex = 0;
+  else if (newIndex < 0) newIndex = oscillators.length - 1;
+  oscType = oscillators[newIndex];
   trees.children.forEach((tree) => {
     tree.synth.oscillator.type = oscType.key;
   });

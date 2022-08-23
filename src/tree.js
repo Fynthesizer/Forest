@@ -446,11 +446,7 @@ function calculateTimeOffset(position) {
   let direction = new THREE.Vector3().copy(position).normalize();
   let distance = position.distanceTo(listener.position);
   let angle = new THREE.Vector3(0, 0, 1).angleTo(direction);
-  console.log("angle: " + angle);
   let arcLength = distance * Math.abs(angle);
-  console.log("distance: " + distance);
-  console.log("arc length: " + arcLength);
   let timeOffset = ((arcLength + distance) * offsetMultiplier) % arpPeriod;
-  console.log("time offset: " + timeOffset);
   return timeOffset;
 }

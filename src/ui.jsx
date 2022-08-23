@@ -139,9 +139,9 @@ class OscSelector extends React.Component {
   }
 
   render() {
-    const listItems = Object.keys(oscillators).map((osc) => (
-      <Dropdown.Item key={osc} eventKey={osc}>
-        {oscillators[osc].name}
+    const listItems = oscillators.map((osc) => (
+      <Dropdown.Item key={osc.name} eventKey={osc.name}>
+        {osc.name}
       </Dropdown.Item>
     ));
     return (
@@ -170,9 +170,9 @@ class ScaleSelector extends React.Component {
   }
 
   render() {
-    const listItems = Object.keys(scales).map((scale) => (
-      <Dropdown.Item key={scale} eventKey={scale}>
-        {scales[scale].name}
+    const listItems = scales.map((scale) => (
+      <Dropdown.Item key={scale.name} eventKey={scale.name}>
+        {scale.name}
       </Dropdown.Item>
     ));
     return (
