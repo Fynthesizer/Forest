@@ -128,6 +128,22 @@ $theme-colors: (
   font-family: "Nunito";
 }
 
+#gameScreen {
+  position: absolute;
+  bottom: 0.5rem;
+  background-color: rgba(0, 0, 0, 0);
+  font-family: "Nunito";
+  text-align: center;
+  align-items: flex-start;
+  justify-content: end;
+  width: 100%;
+  height: 10%;
+}
+
+#gameScreen span {
+  width: 100%;
+}
+
 #errorScreen {
   background-color: rgba(0, 0, 0, 1);
 }

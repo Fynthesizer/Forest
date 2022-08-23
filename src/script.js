@@ -240,6 +240,7 @@ function onClick(event) {
 }
 
 function onKeyPress(event) {
+  console.log(event.key);
   switch (event.key) {
     case "ArrowUp":
       cycleScale(1);
@@ -252,6 +253,9 @@ function onKeyPress(event) {
       break;
     case "ArrowLeft":
       cycleOsc(-1);
+      break;
+    case " ":
+      clearTrees();
       break;
   }
 }
@@ -390,6 +394,7 @@ function cycleScale(direction) {
   if (newIndex >= scales.length) newIndex = 0;
   else if (newIndex < 0) newIndex = scales.length - 1;
   scale = scales[newIndex];
+  renderUI(state, isMobile);
 }
 
 function cycleOsc(direction) {
@@ -401,6 +406,7 @@ function cycleOsc(direction) {
   trees.children.forEach((tree) => {
     tree.synth.oscillator.type = oscType.key;
   });
+  renderUI(state, isMobile);
 }
 
 if (browserCompatible) {

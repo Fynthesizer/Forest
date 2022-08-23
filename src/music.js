@@ -56,8 +56,9 @@ export const oscillators = [
   { name: "Saw", key: "sawtooth" },
   { name: "Triangle", key: "triangle" },
   { name: "Square", key: "square" },
-  //fatsawtooth: { name: "Fat Saw", key: "fatsawtooth" },
-  //fatsquare: { name: "Fat Square", key: "fatsquare" },
+  { name: "Fat Saw", key: "fatsawtooth" },
+  { name: "Fat Square", key: "fatsquare" },
+  { name: "Fat Triangle", key: "fattriangle" },
   //fmsquare: { name: "FM Square", key: "fmsquare" },
   //fmsawtooth: { name: "FM Saw", key: "fmsawtooth" },
 ];
