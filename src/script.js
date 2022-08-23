@@ -236,11 +236,13 @@ function onClick(event) {
   else if (state == "playing") {
     if (event.button == 0 && clickedOnCanvas && canPlantTree())
       plantTree(intersection.point);
+    else if (event.button == 2) {
+      controls.unlock();
+    }
   }
 }
 
 function onKeyPress(event) {
-  console.log(event.key);
   switch (event.key) {
     case "ArrowUp":
       cycleScale(1);
