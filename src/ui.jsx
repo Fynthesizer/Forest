@@ -61,6 +61,9 @@ class GameScreen extends React.Component {
   render() {
     return (
       <div className="overlay" id="gameScreen">
+        <span>click to plant trees</span>
+        <span>right click for menu :)</span>
+        <span>~~~~~~~~~</span>
         <span>▽ Scale: {scale.name} △</span>
         <span>◁ Oscillator: {oscType.name} ▷</span>
       </div>

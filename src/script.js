@@ -16,7 +16,7 @@ import { VRButton } from "three/examples/jsm/webxr/VRButton.js";
 import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
 import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls.js";
 
-const maxTrees = 10;
+const maxTrees = 20;
 const lightColour = new THREE.Color("#cfdae4");
 const lightIntensity = 0.75;
 const reverbSettings = { decay: 15, wet: 0.6 };
@@ -231,11 +231,9 @@ function onPointerMove(event) {
 }
 
 function onClick(event) {
-  let clickedOnCanvas = event.path[0] === renderer.domElement;
   if (state == "title" && canLock) setState("playing");
   else if (state == "playing") {
-    if (event.button == 0 && clickedOnCanvas && canPlantTree())
-      plantTree(intersection.point);
+    if (event.button == 0 && canPlantTree()) plantTree(intersection.point);
     else if (event.button == 2) {
       controls.unlock();
     }
@@ -245,19 +243,27 @@ function onClick(event) {
 function onKeyPress(event) {
   switch (event.key) {
     case "ArrowUp":
+    case "Num8":
+    case "w":
       cycleScale(1);
       break;
     case "ArrowDown":
+    case "Num2":
+    case "s":
       cycleScale(-1);
       break;
     case "ArrowRight":
+    case "Num6":
+    case "d":
       cycleOsc(1);
       break;
     case "ArrowLeft":
+    case "Num4":
+    case "a":
       cycleOsc(-1);
       break;
-    case " ":
-      clearTrees();
+    default:
+      controls.unlock();
       break;
   }
 }
